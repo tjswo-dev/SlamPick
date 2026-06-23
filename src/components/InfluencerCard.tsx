@@ -94,7 +94,7 @@ export default function InfluencerCard({
         />
         {/* Clickable overlay linking to influencer profile */}
         <a
-          href="https://www.instagram.com/brandslam_agency/"
+          href={influencer.profileUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={{ position: "absolute", inset: 0, zIndex: 2, cursor: "pointer" }}
@@ -220,16 +220,15 @@ export default function InfluencerCard({
             return (
               <button
                 key={slot.id}
-                onClick={() => isAvailable && onSlotClick(campaign.id, slot.id)}
-                disabled={!isAvailable}
-                title={isFilled ? slot.brandName || "마감" : isReserved ? slot.brandName || "협의 중" : "클릭하여 신청"}
+                onClick={() => onSlotClick(campaign.id, slot.id)}
+                title={isFilled ? slot.brandName || "마감 — 클릭하여 가이드 보기" : isReserved ? slot.brandName || "협의 중" : "클릭하여 신청"}
                 style={{
                   flex: 1,
                   padding: "9px 4px",
                   backgroundColor: isFilled ? "#f9fafb" : isReserved ? "#fffbeb" : "#f0fdf4",
                   border: `1.5px solid ${isFilled ? "#e5e7eb" : isReserved ? "#fde68a" : "#86efac"}`,
                   borderRadius: "6px",
-                  cursor: isAvailable ? "pointer" : "default",
+                  cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -240,12 +239,16 @@ export default function InfluencerCard({
                   if (isAvailable) {
                     e.currentTarget.style.backgroundColor = "#dcfce7";
                     e.currentTarget.style.borderColor = "#4ade80";
+                  } else {
+                    e.currentTarget.style.opacity = "0.7";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (isAvailable) {
                     e.currentTarget.style.backgroundColor = "#f0fdf4";
                     e.currentTarget.style.borderColor = "#86efac";
+                  } else {
+                    e.currentTarget.style.opacity = "1";
                   }
                 }}
               >
@@ -262,33 +265,37 @@ export default function InfluencerCard({
       </div>
 
       {/* ── CTA ── */}
-      {availableCount > 0 && (
-        <div style={{ padding: "0 16px 16px" }}>
-          <button
-            onClick={() => {
-              const first = slots.find((s) => s.status === "available");
-              if (first) onSlotClick(campaign.id, first.id);
-            }}
-            style={{
-              width: "100%",
-              padding: "12px",
-              backgroundColor: "#111",
-              border: "none",
-              borderRadius: "8px",
-              color: "#fff",
-              fontSize: "13px",
-              fontWeight: "600",
-              cursor: "pointer",
-              letterSpacing: "0.02em",
-              transition: "background-color 0.15s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#111")}
-          >
-            탑승 신청 →
-          </button>
-        </div>
-      )}
+      <div style={{ padding: "0 16px 16px" }}>
+        <button
+          onClick={() => {
+            const first = slots.find((s) => s.status === "available") ?? slots[0];
+            if (first) onSlotClick(campaign.id, first.id);
+          }}
+          style={{
+            width: "100%",
+            padding: "12px",
+            backgroundColor: availableCount > 0 ? "#111" : "transparent",
+            border: availableCount > 0 ? "none" : "1px solid #e5e7eb",
+            borderRadius: "8px",
+            color: availableCount > 0 ? "#fff" : "#9ca3af",
+            fontSize: "13px",
+            fontWeight: "600",
+            cursor: "pointer",
+            letterSpacing: "0.02em",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (availableCount > 0) e.currentTarget.style.backgroundColor = "#374151";
+            else { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#6b7280"; }
+          }}
+          onMouseLeave={(e) => {
+            if (availableCount > 0) e.currentTarget.style.backgroundColor = "#111";
+            else { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }
+          }}
+        >
+          {availableCount > 0 ? "탑승 신청 →" : "콘텐츠 가이드 보기"}
+        </button>
+      </div>
     </div>
   );
 }

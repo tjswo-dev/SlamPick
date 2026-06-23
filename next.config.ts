@@ -11,6 +11,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      {
+        protocol: "https",
+        hostname: "*.cdninstagram.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.fbcdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "yt3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "yt3.ggpht.com",
+      },
     ],
   },
 };

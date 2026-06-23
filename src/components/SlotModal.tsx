@@ -28,6 +28,8 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
   });
 
   const availableCount = campaign.slots.filter((s) => s.status === "available").length;
+  const thisSlot = campaign.slots.find((s) => s.id === slotId);
+  const isClosed = thisSlot?.status === "filled" || thisSlot?.status === "reserved";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,9 +162,14 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
 
             {/* Content Guide */}
             <Section title="콘텐츠 가이드">
-              {campaign.contentGuide.map((g, i) => (
-                <GuideItem key={i} index={i + 1} text={g} />
-              ))}
+              {(() => {
+                let numIdx = 0;
+                return campaign.contentGuide.map((g, i) => {
+                  const isConcept = g.startsWith("컨셉:");
+                  if (!isConcept) numIdx++;
+                  return <GuideItem key={i} index={numIdx} text={g} />;
+                });
+              })()}
             </Section>
 
             {/* Restrictions */}
@@ -227,58 +234,36 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
               </div>
             </Section>
 
-            <div style={{ display: "flex", gap: "8px", marginTop: "8px", alignItems: "stretch" }}>
+            {isClosed ? (
               <button
-                onClick={() => setStep("form")}
-                style={{
-                  flex: 1,
-                  padding: "13px",
-                  backgroundColor: "#111",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "700",
-                  letterSpacing: "0.02em",
-                  cursor: "pointer",
-                  transition: "background-color 0.15s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#111")}
+                onClick={onClose}
+                style={{ width: "100%", padding: "13px", backgroundColor: "transparent", color: "#6b7280", border: "1px solid #e5e7eb", borderRadius: "8px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s", marginTop: "8px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#374151"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#6b7280"; }}
               >
-                이 슬롯 신청하기 →
+                닫기
               </button>
-              <button
-                onClick={() => setStep("form")}
-                title="남은 슬롯 전체를 단독으로 선점합니다"
-                style={{
-                  padding: "10px 12px",
-                  backgroundColor: "transparent",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  color: "#9ca3af",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  lineHeight: "1.4",
-                  transition: "all 0.15s",
-                  textAlign: "center",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#374151";
-                  e.currentTarget.style.color = "#374151";
-                  e.currentTarget.style.backgroundColor = "#f9fafb";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#e5e7eb";
-                  e.currentTarget.style.color = "#9ca3af";
-                  e.currentTarget.style.backgroundColor = "#transparent";
-                }}
-              >
-                모두<br />선점하기
-              </button>
-            </div>
+            ) : (
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px", alignItems: "stretch" }}>
+                <button
+                  onClick={() => setStep("form")}
+                  style={{ flex: 1, padding: "13px", backgroundColor: "#111", color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.02em", cursor: "pointer", transition: "background-color 0.15s ease" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#111")}
+                >
+                  이 슬롯 신청하기 →
+                </button>
+                <button
+                  onClick={() => setStep("form")}
+                  title="남은 슬롯 전체를 단독으로 선점합니다"
+                  style={{ padding: "10px 12px", backgroundColor: "transparent", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#9ca3af", fontSize: "11px", fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap", lineHeight: "1.4", transition: "all 0.15s", textAlign: "center" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#374151"; e.currentTarget.style.color = "#374151"; e.currentTarget.style.backgroundColor = "#f9fafb"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  모두<br />선점하기
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -591,31 +576,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function GuideItem({ index, text }: { index: number; text: string }) {
+  if (text.startsWith("컨셉:")) {
+    return (
+      <div style={{ padding: "10px 12px", backgroundColor: "#f8f9fb", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "12px" }}>
+        <span style={{ fontSize: "10px", fontWeight: "700", color: "#9ca3af", letterSpacing: "0.08em", marginBottom: "6px", display: "block" }}>CONCEPT</span>
+        <span style={{ fontSize: "13px", color: "#374151", lineHeight: "1.7" }}>{text.slice(4).trim()}</span>
+      </div>
+    );
+  }
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "10px",
-        padding: "9px 0",
-        borderBottom: "1px solid #f3f4f6",
-        alignItems: "flex-start",
-      }}
-    >
-      <span
-        style={{
-          fontSize: "10px",
-          color: "#fff",
-          backgroundColor: "#111",
-          width: "20px",
-          height: "20px",
-          borderRadius: "4px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          fontWeight: "700",
-        }}
-      >
+    <div style={{ display: "flex", gap: "10px", padding: "9px 0", borderBottom: "1px solid #f3f4f6", alignItems: "flex-start" }}>
+      <span style={{ fontSize: "10px", color: "#fff", backgroundColor: "#111", width: "20px", height: "20px", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "700" }}>
         {index}
       </span>
       <span style={{ fontSize: "13px", color: "#374151", lineHeight: "1.6" }}>{text}</span>
