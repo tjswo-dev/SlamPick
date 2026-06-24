@@ -6,7 +6,7 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
 
   const { data, error } = await supabase
     .from("campaigns")
-    .select(`*, influencer:influencers(*), slots(*)`)
+    .select(`*, influencer:influencers!campaigns_influencer_id_fkey(*), slots(*)`)
     .order("created_at", { ascending: false });
 
   if (error || !data) {
