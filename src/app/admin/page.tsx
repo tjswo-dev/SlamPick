@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil, Trash2 } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil, Trash2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { ApplicationStatus } from "@/lib/types";
 import CampaignFormModal, { type CampaignEditData } from "@/components/CampaignFormModal";
@@ -23,7 +23,14 @@ interface AdminApp {
   companyName: string;
   brandName: string;
   productName: string;
+  productUrl?: string;
+  productDescription?: string;
+  exposurePoint?: string;
+  referenceVideoUrl?: string;
+  precautions?: string;
+  contactName: string;
   contactEmail: string;
+  contactPhone?: string;
   status: ApplicationStatus;
   appliedAt: string;
   invoiceNumber?: string;
@@ -86,6 +93,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [campaignModal, setCampaignModal] = useState<{ open: boolean; mode: "create" | "edit"; target?: CampaignEditData }>({ open: false, mode: "create" });
+  const [expandedAppId, setExpandedAppId] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -99,10 +107,12 @@ export default function AdminPage() {
       .from("applications")
       .select(`
         id, campaign_id, slot_id,
-        company_name, brand_name, product_name, contact_email,
+        company_name, brand_name, product_name, product_url, product_description,
+        exposure_point, reference_video_url, precautions,
+        contact_name, contact_email, contact_phone,
         status, applied_at,
         slots(id, slot_number),
-        campaigns(id, content_title, per_slot_cost, influencer:influencers(name, platform, thumbnail_url)),
+        campaigns(id, content_title, per_slot_cost, influencer:influencers!campaigns_influencer_id_fkey(name, platform, thumbnail_url)),
         invoices(invoice_number)
       `)
       .order("applied_at", { ascending: false });
@@ -127,7 +137,14 @@ export default function AdminPage() {
           companyName: row.company_name,
           brandName: row.brand_name,
           productName: row.product_name,
+          productUrl: row.product_url ?? undefined,
+          productDescription: row.product_description ?? undefined,
+          exposurePoint: row.exposure_point ?? undefined,
+          referenceVideoUrl: row.reference_video_url ?? undefined,
+          precautions: row.precautions ?? undefined,
+          contactName: row.contact_name ?? "",
           contactEmail: row.contact_email,
+          contactPhone: row.contact_phone ?? undefined,
           status: row.status as ApplicationStatus,
           appliedAt: row.applied_at?.slice(0, 10) ?? "",
           invoiceNumber: inv?.invoice_number,
@@ -480,6 +497,17 @@ export default function AdminPage() {
                           )}
                         </div>
 
+                        {/* 상세 토글 */}
+                        <button
+                          onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
+                          style={{ flexShrink: 0, background: "none", border: "1px solid #e5e7eb", borderRadius: "7px", padding: "6px 10px", cursor: "pointer", color: "#9ca3af", display: "flex", alignItems: "center", gap: "3px", fontSize: "11px", transition: "all 0.15s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#374151"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }}
+                        >
+                          {expandedAppId === app.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          상세
+                        </button>
+
                         {/* Actions */}
                         <div style={{ flexShrink: 0, display: "flex", gap: "6px" }}>
                           {app.status === "pending" && (
@@ -516,6 +544,49 @@ export default function AdminPage() {
                           )}
                         </div>
                       </div>
+
+                      {/* 상세 패널 */}
+                      {expandedAppId === app.id && (
+                        <div style={{ borderTop: "1px solid #f3f4f6", backgroundColor: "#fafafa", padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                          <DetailRow label="회사명" value={app.companyName} />
+                          <DetailRow label="브랜드명" value={app.brandName} />
+                          <DetailRow label="담당자" value={app.contactName} />
+                          <DetailRow label="연락처" value={app.contactPhone} />
+                          <DetailRow label="이메일" value={app.contactEmail} />
+                          <DetailRow label="제품명" value={app.productName} />
+                          {app.productUrl && (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <p style={{ fontSize: "10px", color: "#9ca3af", fontWeight: "600", marginBottom: "3px" }}>제품 URL</p>
+                              <a href={app.productUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "#2563eb", display: "flex", alignItems: "center", gap: "4px", textDecoration: "none" }}>
+                                {app.productUrl} <ExternalLink size={11} />
+                              </a>
+                            </div>
+                          )}
+                          {app.productDescription && (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <DetailRow label="제품 설명" value={app.productDescription} />
+                            </div>
+                          )}
+                          {app.exposurePoint && (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <DetailRow label="노출 포인트" value={app.exposurePoint} />
+                            </div>
+                          )}
+                          {app.referenceVideoUrl && (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <p style={{ fontSize: "10px", color: "#9ca3af", fontWeight: "600", marginBottom: "3px" }}>참고 영상 URL</p>
+                              <a href={app.referenceVideoUrl} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "#2563eb", display: "flex", alignItems: "center", gap: "4px", textDecoration: "none" }}>
+                                {app.referenceVideoUrl} <ExternalLink size={11} />
+                              </a>
+                            </div>
+                          )}
+                          {app.precautions && (
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <DetailRow label="유의사항" value={app.precautions} />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -569,16 +640,14 @@ export default function AdminPage() {
                   </div>
 
                   {/* Slot status */}
-                  <div style={{ flex: "1 1 200px" }}>
-                    <div style={{ display: "flex", gap: "4px", marginBottom: "6px" }}>
+                  <div style={{ flex: "1 1 240px" }}>
+                    <div style={{ display: "flex", gap: "4px", marginBottom: "8px", flexWrap: "wrap" }}>
                       {camp.slots.map((slot) => (
                         <div
                           key={slot.number}
                           title={slot.brandName ?? (slot.status === "available" ? "빈 슬롯" : slot.status)}
                           style={{
-                            width: "28px",
-                            height: "28px",
-                            borderRadius: "6px",
+                            width: "28px", height: "28px", borderRadius: "6px",
                             backgroundColor:
                               slot.status === "available" ? "#f0fdf4" :
                               slot.status === "reserved" ? "#fffbeb" : "#f3f4f6",
@@ -586,11 +655,8 @@ export default function AdminPage() {
                               slot.status === "available" ? "#86efac" :
                               slot.status === "reserved" ? "#fde68a" : "#d1d5db"
                             }`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "10px",
-                            fontWeight: "700",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "10px", fontWeight: "700",
                             color: slot.status === "available" ? "#16a34a" : slot.status === "reserved" ? "#d97706" : "#9ca3af",
                           }}
                         >
@@ -598,11 +664,32 @@ export default function AdminPage() {
                         </div>
                       ))}
                     </div>
-                    <p style={{ fontSize: "11px", color: "#9ca3af" }}>
-                      <span style={{ color: "#16a34a", fontWeight: "600" }}>{availableCount} 가능</span>
-                      {reservedCount > 0 && <span style={{ color: "#d97706", fontWeight: "600" }}> · {reservedCount} 예약</span>}
-                      {filledCount > 0 && <span style={{ color: "#9ca3af" }}> · {filledCount} 확정</span>}
-                    </p>
+                    {/* 브랜드별 슬롯 현황 */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      {camp.slots.filter((s) => s.brandName).map((slot) => (
+                        <div key={slot.number} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{
+                            fontSize: "10px", fontWeight: "700", minWidth: "18px", textAlign: "center",
+                            color: slot.status === "reserved" ? "#d97706" : "#9ca3af",
+                          }}>
+                            #{slot.number}
+                          </span>
+                          <span style={{
+                            fontSize: "11px", color: "#374151",
+                            backgroundColor: slot.status === "reserved" ? "#fffbeb" : "#f3f4f6",
+                            padding: "1px 7px", borderRadius: "4px",
+                          }}>
+                            {slot.brandName}
+                          </span>
+                          <span style={{ fontSize: "10px", color: slot.status === "reserved" ? "#d97706" : "#9ca3af" }}>
+                            {slot.status === "reserved" ? "예약" : "확정"}
+                          </span>
+                        </div>
+                      ))}
+                      {camp.slots.filter((s) => s.brandName).length === 0 && (
+                        <p style={{ fontSize: "11px", color: "#d1d5db" }}>신청 없음</p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Per slot cost */}
@@ -705,6 +792,16 @@ function StatCard({ icon, label, value, color, alert }: { icon: React.ReactNode;
         <p style={{ fontSize: "22px", fontWeight: "900", color, letterSpacing: "-0.04em" }}>{value}</p>
         <p style={{ fontSize: "11px", color: "#9ca3af", marginTop: "1px" }}>{label}</p>
       </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <div>
+      <p style={{ fontSize: "10px", color: "#9ca3af", fontWeight: "600", marginBottom: "2px" }}>{label}</p>
+      <p style={{ fontSize: "12px", color: "#374151", lineHeight: "1.5" }}>{value}</p>
     </div>
   );
 }
