@@ -4,24 +4,68 @@ import { Campaign } from "@/lib/types";
 export async function fetchCampaigns(): Promise<Campaign[]> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  // 1. campaigns 단독 조회
+  const { data: campData, error: campErr } = await supabase
     .from("campaigns")
-    .select(`*, influencer:influencers!campaigns_influencer_id_fkey(*), slots(*)`)
+    .select("*")
     .order("created_at", { ascending: false });
 
-  if (error || !data) {
-    console.error("[fetchCampaigns] error:", error);
-    return [];
+  if (campErr || !campData) {
+    console.error("[fetchCampaigns] campaigns error:", campErr);
+    throw new Error(`campaigns 조회 실패: ${campErr?.message}`);
   }
 
+  if (campData.length === 0) return [];
+
+  // 2. influencers 단독 조회
+  const influencerIds = [...new Set(campData.map((c) => c.influencer_id).filter(Boolean))];
+  const { data: infData, error: infErr } = await supabase
+    .from("influencers")
+    .select("*")
+    .in("id", influencerIds);
+
+  if (infErr) {
+    console.error("[fetchCampaigns] influencers error:", infErr);
+    throw new Error(`influencers 조회 실패: ${infErr?.message}`);
+  }
+
+  // 3. slots 단독 조회
+  const campaignIds = campData.map((c) => c.id);
+  const { data: slotData, error: slotErr } = await supabase
+    .from("slots")
+    .select("*")
+    .in("campaign_id", campaignIds);
+
+  if (slotErr) {
+    console.error("[fetchCampaigns] slots error:", slotErr);
+    throw new Error(`slots 조회 실패: ${slotErr?.message}`);
+  }
+
+  // 4. JS에서 합치기
+  const infMap: Record<string, typeof infData[0]> = {};
+  (infData ?? []).forEach((i) => { infMap[i.id] = i; });
+
+  const slotMap: Record<string, typeof slotData> = {};
+  (slotData ?? []).forEach((s) => {
+    if (!slotMap[s.campaign_id]) slotMap[s.campaign_id] = [];
+    slotMap[s.campaign_id].push(s);
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]).flatMap((row) => {
-    const influencer = Array.isArray(row.influencer) ? row.influencer[0] : row.influencer;
+  return campData.flatMap((row: any) => {
+    const influencer = infMap[row.influencer_id];
     if (!influencer) {
-      console.warn("[fetchCampaigns] no influencer for campaign", row.id);
+      console.warn("[fetchCampaigns] influencer not found for campaign", row.id, "influencer_id:", row.influencer_id);
       return [];
     }
-    const slots = Array.isArray(row.slots) ? row.slots : [];
+    const slots = (slotMap[row.id] ?? [])
+      .sort((a: { slot_number: number }, b: { slot_number: number }) => a.slot_number - b.slot_number)
+      .map((s: { slot_number: number; status: string; brand_name?: string }) => ({
+        id: s.slot_number,
+        status: s.status as "available" | "reserved" | "filled",
+        brandName: s.brand_name ?? undefined,
+      }));
+
     return [{
       id: row.id,
       influencer: {
@@ -39,13 +83,7 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
       shootingDate: row.shooting_date,
       publishDate: row.publish_date,
       totalSlots: row.total_slots,
-      slots: [...slots]
-        .sort((a: { slot_number: number }, b: { slot_number: number }) => a.slot_number - b.slot_number)
-        .map((s: { slot_number: number; status: string; brand_name?: string }) => ({
-          id: s.slot_number,
-          status: s.status as "available" | "reserved" | "filled",
-          brandName: s.brand_name ?? undefined,
-        })),
+      slots,
       totalCost: row.total_cost,
       perSlotCost: row.per_slot_cost,
       contentGuide: (row.content_guide as string[]) ?? [],
