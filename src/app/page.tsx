@@ -20,7 +20,13 @@ export default function LoginPage() {
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      if (error.message.includes("Email not confirmed")) {
+        setError("이메일 인증이 필요합니다. 가입 시 받은 확인 메일을 확인해주세요.");
+      } else if (error.message.includes("Invalid login credentials")) {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
       return;
     }
