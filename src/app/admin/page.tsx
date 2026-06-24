@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { ApplicationStatus } from "@/lib/types";
+import CampaignFormModal, { type InfluencerOption, type CampaignEditData } from "@/components/CampaignFormModal";
 
 const ADMIN_EMAILS = ["admin@slam-global.com"];
 
@@ -30,12 +31,19 @@ interface AdminApp {
 
 interface AdminCampaign {
   id: string;
+  influencerId: string;
   contentTitle: string;
+  contentType: string;
+  recruitDeadline: string;
   shootingDate: string;
   publishDate: string;
   status: "open" | "closing";
   perSlotCost: number;
   totalSlots: number;
+  country: "us" | "jp" | "cn";
+  thumbnailUrl: string;
+  contentGuide: string[];
+  restrictions: string[];
   influencerName: string;
   influencerPlatform: string;
   influencerThumbnail: string;
@@ -75,8 +83,10 @@ export default function AdminPage() {
   const [appFilter, setAppFilter] = useState<AppFilter>("all");
   const [apps, setApps] = useState<AdminApp[]>([]);
   const [campaigns, setCampaigns] = useState<AdminCampaign[]>([]);
+  const [influencers, setInfluencers] = useState<InfluencerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [campaignModal, setCampaignModal] = useState<{ open: boolean; mode: "create" | "edit"; target?: CampaignEditData }>({ open: false, mode: "create" });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -129,8 +139,10 @@ export default function AdminPage() {
     const { data: campRows } = await supabase
       .from("campaigns")
       .select(`
-        id, content_title, shooting_date, publish_date, status, per_slot_cost, total_slots,
-        influencer:influencers(name, platform, thumbnail_url),
+        id, influencer_id, content_title, content_type, recruit_deadline,
+        shooting_date, publish_date, status, per_slot_cost, total_slots,
+        country, thumbnail_url, content_guide, restrictions,
+        influencer:influencers(id, name, handle, platform, followers, thumbnail_url),
         slots(slot_number, status, brand_name)
       `)
       .order("shooting_date", { ascending: true });
@@ -139,15 +151,22 @@ export default function AdminPage() {
       setCampaigns(campRows.map((r) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const row = r as any;
-        const influencer = (Array.isArray(row.influencer) ? row.influencer[0] : row.influencer) as { name: string; platform: string; thumbnail_url: string } | null;
+        const influencer = (Array.isArray(row.influencer) ? row.influencer[0] : row.influencer) as { id: string; name: string; platform: string; thumbnail_url: string } | null;
         return {
           id: row.id,
+          influencerId: row.influencer_id ?? influencer?.id ?? "",
           contentTitle: row.content_title,
+          contentType: row.content_type ?? "",
+          recruitDeadline: row.recruit_deadline ?? "",
           shootingDate: row.shooting_date,
           publishDate: row.publish_date,
           status: row.status as "open" | "closing",
           perSlotCost: row.per_slot_cost,
           totalSlots: row.total_slots,
+          country: row.country as "us" | "jp" | "cn",
+          thumbnailUrl: row.thumbnail_url ?? "",
+          contentGuide: Array.isArray(row.content_guide) ? row.content_guide : [],
+          restrictions: Array.isArray(row.restrictions) ? row.restrictions : [],
           influencerName: influencer?.name ?? "",
           influencerPlatform: influencer?.platform ?? "",
           influencerThumbnail: influencer?.thumbnail_url ?? "",
@@ -160,6 +179,22 @@ export default function AdminPage() {
             })),
         };
       }));
+    }
+
+    const { data: infRows } = await supabase
+      .from("influencers")
+      .select("id, name, handle, platform, followers, thumbnail_url")
+      .order("name", { ascending: true });
+
+    if (infRows) {
+      setInfluencers(infRows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        handle: r.handle,
+        platform: r.platform,
+        followers: r.followers,
+        thumbnailUrl: r.thumbnail_url ?? "",
+      })));
     }
 
     setLoading(false);
@@ -463,6 +498,17 @@ export default function AdminPage() {
 
         {/* ── 캠페인 관리 ── */}
         {activeTab === "campaigns" && (
+          <div>
+            {/* 새 캠페인 버튼 */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+              <button
+                onClick={() => setCampaignModal({ open: true, mode: "create" })}
+                style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", backgroundColor: "#111", border: "none", borderRadius: "8px", color: "#fff", fontSize: "13px", fontWeight: "700", cursor: "pointer" }}
+              >
+                <Plus size={14} /> 새 캠페인 등록
+              </button>
+            </div>
+
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {campaigns.map((camp) => {
               const availableCount = camp.slots.filter((s) => s.status === "available").length;
@@ -537,8 +583,8 @@ export default function AdminPage() {
                     <p style={{ fontSize: "11px", color: "#9ca3af" }}>슬롯당</p>
                   </div>
 
-                  {/* Status toggle */}
-                  <div style={{ flexShrink: 0 }}>
+                  {/* Status toggle + Edit */}
+                  <div style={{ flexShrink: 0, display: "flex", gap: "6px", alignItems: "center" }}>
                     <button
                       onClick={() => handleToggleCampaignStatus(camp)}
                       style={{
@@ -556,15 +602,52 @@ export default function AdminPage() {
                     >
                       {camp.status === "open" ? "모집 중" : "마감 임박"}
                     </button>
+                    <button
+                      onClick={() => setCampaignModal({
+                        open: true,
+                        mode: "edit",
+                        target: {
+                          id: camp.id,
+                          influencerId: camp.influencerId,
+                          contentTitle: camp.contentTitle,
+                          contentType: camp.contentType,
+                          recruitDeadline: camp.recruitDeadline,
+                          shootingDate: camp.shootingDate,
+                          publishDate: camp.publishDate,
+                          totalSlots: camp.totalSlots,
+                          perSlotCost: camp.perSlotCost,
+                          country: camp.country,
+                          thumbnailUrl: camp.thumbnailUrl,
+                          status: camp.status,
+                          contentGuide: camp.contentGuide.length > 0 ? camp.contentGuide : [""],
+                          restrictions: camp.restrictions.length > 0 ? camp.restrictions : [""],
+                        },
+                      })}
+                      style={{ display: "flex", alignItems: "center", gap: "4px", padding: "6px 12px", backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#6b7280", fontSize: "12px", cursor: "pointer" }}
+                    >
+                      <Pencil size={11} /> 수정
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
+          </div>
         )}
 
         </>)}
       </div>
+
+      {/* Campaign Form Modal */}
+      {campaignModal.open && (
+        <CampaignFormModal
+          mode={campaignModal.mode}
+          existing={campaignModal.target}
+          influencers={influencers}
+          onClose={() => setCampaignModal({ open: false, mode: "create" })}
+          onSaved={loadData}
+        />
+      )}
     </div>
   );
 }
