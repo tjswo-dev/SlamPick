@@ -18,10 +18,14 @@ export default function Dashboard() {
   const supabase = createClient();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
+  const [dbError, setDbError] = useState<string>("");
 
   useEffect(() => {
     fetchCampaigns().then((data) => {
       setCampaigns(data);
+      setDbLoading(false);
+    }).catch((e) => {
+      setDbError(String(e));
       setDbLoading(false);
     });
   }, []);
@@ -179,6 +183,16 @@ export default function Dashboard() {
         {dbLoading && (
           <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af", fontSize: "14px" }}>
             캠페인 불러오는 중...
+          </div>
+        )}
+        {dbError && (
+          <div style={{ textAlign: "center", padding: "20px", color: "#dc2626", fontSize: "13px", backgroundColor: "#fef2f2", borderRadius: "8px", marginBottom: "16px" }}>
+            오류: {dbError}
+          </div>
+        )}
+        {!dbLoading && !dbError && campaigns.length === 0 && (
+          <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af", fontSize: "14px" }}>
+            등록된 캠페인이 없습니다
           </div>
         )}
         {!dbLoading && (<>

@@ -9,7 +9,10 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
     .select(`*, influencer:influencers(*), slots(*)`)
     .order("created_at", { ascending: false });
 
-  if (error || !data) return [];
+  if (error || !data) {
+    console.error("[fetchCampaigns] error:", error);
+    return [];
+  }
 
   return data.map((row) => ({
     id: row.id,
