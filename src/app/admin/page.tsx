@@ -248,6 +248,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleComplete = async (app: AdminApp) => {
+    setActionLoading(app.id + "_complete");
+    try {
+      await supabase.from("applications").update({ status: "completed" }).eq("id", app.id);
+      setApps((prev) => prev.map((a) => a.id === app.id ? { ...a, status: "completed" } : a));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleDeleteCampaign = async (campaign: AdminCampaign) => {
     const hasActive = campaign.slots.some((s) => s.status !== "available");
     if (hasActive) {
@@ -496,6 +506,14 @@ export default function AdminPage() {
                               variant="confirm"
                             />
                           )}
+                          {app.status === "active" && (
+                            <ActionButton
+                              label={actionLoading === app.id + "_complete" ? "처리 중..." : "완료 처리"}
+                              onClick={() => handleComplete(app)}
+                              disabled={!!actionLoading}
+                              variant="complete"
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -695,12 +713,13 @@ function ActionButton({ label, onClick, disabled, variant }: {
   label: string;
   onClick: () => void;
   disabled: boolean;
-  variant: "approve" | "reject" | "confirm";
+  variant: "approve" | "reject" | "confirm" | "complete";
 }) {
   const styles = {
-    approve: { bg: "#111",     border: "#111",     color: "#fff",     hoverBg: "#374151" },
-    reject:  { bg: "#fff",     border: "#fecaca",  color: "#dc2626",  hoverBg: "#fef2f2" },
-    confirm: { bg: "#2563eb",  border: "#2563eb",  color: "#fff",     hoverBg: "#1d4ed8" },
+    approve:  { bg: "#111",     border: "#111",     color: "#fff",     hoverBg: "#374151" },
+    reject:   { bg: "#fff",     border: "#fecaca",  color: "#dc2626",  hoverBg: "#fef2f2" },
+    confirm:  { bg: "#2563eb",  border: "#2563eb",  color: "#fff",     hoverBg: "#1d4ed8" },
+    complete: { bg: "#fff",     border: "#d1d5db",  color: "#6b7280",  hoverBg: "#f3f4f6" },
   }[variant];
 
   return (
