@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import SlotModal from "@/components/SlotModal";
 import TimelineView from "@/components/TimelineView";
-import { campaigns } from "@/lib/data";
-import { BrandApplication } from "@/lib/types";
+import { fetchCampaigns } from "@/lib/db";
+import { Campaign, BrandApplication } from "@/lib/types";
 
 type FilterPlatform = "all" | "youtube" | "instagram" | "tiktok" | "xiaohongshu";
 type FilterCountry = "all" | "us" | "jp" | "cn";
@@ -16,6 +16,15 @@ type FilterMonth = "all" | "2026-06" | "2026-07" | "2026-08" | "2026-09" | "2026
 export default function Dashboard() {
   const router = useRouter();
   const supabase = createClient();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [dbLoading, setDbLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCampaigns().then((data) => {
+      setCampaigns(data);
+      setDbLoading(false);
+    });
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -116,6 +125,12 @@ export default function Dashboard() {
 
       {/* Main content */}
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 28px" }}>
+        {dbLoading && (
+          <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af", fontSize: "14px" }}>
+            캠페인 불러오는 중...
+          </div>
+        )}
+        {!dbLoading && (<>
         {/* Page Header */}
         <div style={{ marginBottom: "32px", textAlign: "center" }}>
           <h2
@@ -292,6 +307,7 @@ export default function Dashboard() {
           onFilterPlatform={(p) => setFilterPlatform(p)}
           onFilterMonth={(m) => setFilterMonth(m as typeof filterMonth)}
         />
+        </>)}
       </div>
 
       {/* Modal */}
