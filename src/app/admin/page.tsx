@@ -6,7 +6,7 @@ import Image from "next/image";
 import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { ApplicationStatus } from "@/lib/types";
-import CampaignFormModal, { type InfluencerOption, type CampaignEditData } from "@/components/CampaignFormModal";
+import CampaignFormModal, { type CampaignEditData } from "@/components/CampaignFormModal";
 
 const ADMIN_EMAILS = ["admin@slam-global.com"];
 
@@ -83,7 +83,6 @@ export default function AdminPage() {
   const [appFilter, setAppFilter] = useState<AppFilter>("all");
   const [apps, setApps] = useState<AdminApp[]>([]);
   const [campaigns, setCampaigns] = useState<AdminCampaign[]>([]);
-  const [influencers, setInfluencers] = useState<InfluencerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [campaignModal, setCampaignModal] = useState<{ open: boolean; mode: "create" | "edit"; target?: CampaignEditData }>({ open: false, mode: "create" });
@@ -181,21 +180,6 @@ export default function AdminPage() {
       }));
     }
 
-    const { data: infRows } = await supabase
-      .from("influencers")
-      .select("id, name, handle, platform, followers, thumbnail_url")
-      .order("name", { ascending: true });
-
-    if (infRows) {
-      setInfluencers(infRows.map((r) => ({
-        id: r.id,
-        name: r.name,
-        handle: r.handle,
-        platform: r.platform,
-        followers: r.followers,
-        thumbnailUrl: r.thumbnail_url ?? "",
-      })));
-    }
 
     setLoading(false);
   };
@@ -609,6 +593,7 @@ export default function AdminPage() {
                         target: {
                           id: camp.id,
                           influencerId: camp.influencerId,
+                          influencerName: camp.influencerName,
                           contentTitle: camp.contentTitle,
                           contentType: camp.contentType,
                           recruitDeadline: camp.recruitDeadline,
@@ -643,7 +628,6 @@ export default function AdminPage() {
         <CampaignFormModal
           mode={campaignModal.mode}
           existing={campaignModal.target}
-          influencers={influencers}
           onClose={() => setCampaignModal({ open: false, mode: "create" })}
           onSaved={loadData}
         />
