@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { ApplicationStatus } from "@/lib/types";
 import CampaignFormModal, { type CampaignEditData } from "@/components/CampaignFormModal";
@@ -141,7 +141,7 @@ export default function AdminPage() {
         id, influencer_id, content_title, content_type, recruit_deadline,
         shooting_date, publish_date, status, per_slot_cost, total_slots,
         country, thumbnail_url, content_guide, restrictions,
-        influencer:influencers(id, name, handle, platform, followers, thumbnail_url),
+        influencer:influencers!campaigns_influencer_id_fkey(id, name, handle, platform, followers, thumbnail_url),
         slots(slot_number, status, brand_name)
       `)
       .order("shooting_date", { ascending: true });
@@ -246,6 +246,32 @@ export default function AdminPage() {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleDeleteCampaign = async (campaign: AdminCampaign) => {
+    const hasActive = campaign.slots.some((s) => s.status !== "available");
+    if (hasActive) {
+      if (!window.confirm(`"${campaign.contentTitle}"에 예약/확정된 슬롯이 있습니다. 정말 삭제하시겠습니까?\n(연관된 신청 및 인보이스도 모두 삭제됩니다)`)) return;
+    } else {
+      if (!window.confirm(`"${campaign.contentTitle}"을 삭제하시겠습니까?`)) return;
+    }
+
+    // 연관 데이터 순서대로 삭제
+    const { data: slotRows } = await supabase.from("slots").select("id").eq("campaign_id", campaign.id);
+    const slotIds = (slotRows ?? []).map((s: { id: string }) => s.id);
+
+    if (slotIds.length > 0) {
+      const { data: appRows } = await supabase.from("applications").select("id").in("slot_id", slotIds);
+      const appIds = (appRows ?? []).map((a: { id: string }) => a.id);
+      if (appIds.length > 0) {
+        await supabase.from("invoices").delete().in("application_id", appIds);
+        await supabase.from("applications").delete().in("id", appIds);
+      }
+      await supabase.from("slots").delete().eq("campaign_id", campaign.id);
+    }
+
+    await supabase.from("campaigns").delete().eq("id", campaign.id);
+    setCampaigns((prev) => prev.filter((c) => c.id !== campaign.id));
   };
 
   const handleToggleCampaignStatus = async (campaign: AdminCampaign) => {
@@ -611,6 +637,14 @@ export default function AdminPage() {
                       style={{ display: "flex", alignItems: "center", gap: "4px", padding: "6px 12px", backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#6b7280", fontSize: "12px", cursor: "pointer" }}
                     >
                       <Pencil size={11} /> 수정
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCampaign(camp)}
+                      style={{ display: "flex", alignItems: "center", gap: "4px", padding: "6px 12px", backgroundColor: "#fff", border: "1px solid #fecaca", borderRadius: "8px", color: "#dc2626", fontSize: "12px", cursor: "pointer", transition: "all 0.15s" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fef2f2"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#fff"; }}
+                    >
+                      <Trash2 size={11} /> 삭제
                     </button>
                   </div>
                 </div>
