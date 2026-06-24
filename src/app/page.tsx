@@ -18,13 +18,13 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
       setLoading(false);
       return;
     }
-    router.push("/dashboard");
+    router.push(data.user?.email === "admin@slam-global.com" ? "/admin" : "/dashboard");
   };
 
   return (

@@ -5,7 +5,8 @@ export type ApplicationStatus =
   | "payment_pending"   // 입금 대기 — 예정일 입력 완료, 송금 전
   | "payment_confirming"// 입금 확인 중 — 송금 완료 클릭 후
   | "active"            // 진행 중 — 입금 확인 완료
-  | "completed";        // 완료
+  | "completed"         // 완료
+  | "rejected";         // 반려
 
 export interface MyApplication {
   id: string;

@@ -23,19 +23,24 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+  const isAdmin = user?.email === "admin@slam-global.com";
   const protectedPaths = ["/dashboard", "/mypage"];
 
-  if (protectedPaths.some((p) => pathname.startsWith(p)) && !user) {
+  if ([...protectedPaths, "/admin"].some((p) => pathname.startsWith(p)) && !user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if ((pathname === "/" || pathname === "/signup") && user) {
+  if (pathname.startsWith("/admin") && user && !isAdmin) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if ((pathname === "/" || pathname === "/signup") && user) {
+    return NextResponse.redirect(new URL(isAdmin ? "/admin" : "/dashboard", request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/", "/signup", "/dashboard/:path*", "/mypage/:path*"],
+  matcher: ["/", "/signup", "/dashboard/:path*", "/mypage/:path*", "/admin", "/admin/:path*"],
 };

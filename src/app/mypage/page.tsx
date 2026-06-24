@@ -17,6 +17,7 @@ const STATUS_META: Record<ApplicationStatus, { label: string; bg: string; border
   payment_confirming:  { label: "입금 확인 중", bg: "#f3f4f6", border: "#e5e7eb",  color: "#6b7280" },
   active:              { label: "진행 중",      bg: "#f0fdf4", border: "#bbf7d0",  color: "#16a34a" },
   completed:           { label: "완료",         bg: "#f3f4f6", border: "#e5e7eb",  color: "#6b7280" },
+  rejected:            { label: "반려",         bg: "#fef2f2", border: "#fecaca",  color: "#dc2626" },
 };
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -184,6 +185,7 @@ export default function MyPage() {
     payment_confirming:apps.filter((a) => a.status === "payment_confirming").length,
     active:            apps.filter((a) => a.status === "active").length,
     completed:         apps.filter((a) => a.status === "completed").length,
+    rejected:          apps.filter((a) => a.status === "rejected").length,
   };
 
   const handleSave = async () => {
