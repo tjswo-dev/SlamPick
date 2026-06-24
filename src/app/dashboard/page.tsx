@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase";
 import SlotModal from "@/components/SlotModal";
 import TimelineView from "@/components/TimelineView";
 import { campaigns } from "@/lib/data";
@@ -14,6 +15,12 @@ type FilterMonth = "all" | "2026-06" | "2026-07" | "2026-08" | "2026-09" | "2026
 
 export default function Dashboard() {
   const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
   const [selectedSlot, setSelectedSlot] = useState<{ campaignId: string; slotId: number } | null>(null);
   const [filterPlatform, setFilterPlatform] = useState<FilterPlatform>("all");
   const [filterCountry, setFilterCountry] = useState<FilterCountry>("all");
@@ -90,7 +97,7 @@ export default function Dashboard() {
         </button>
 
         <button
-          onClick={() => router.push("/")}
+          onClick={handleLogout}
           style={{
             background: "none",
             border: "none",

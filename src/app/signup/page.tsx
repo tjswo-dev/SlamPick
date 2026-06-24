@@ -4,24 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("비밀번호는 6자 이상이어야 합니다.");
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       setLoading(false);
       return;
     }
@@ -65,9 +76,9 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Login form */}
+      {/* Signup form */}
       <form
-        onSubmit={handleLogin}
+        onSubmit={handleSignup}
         style={{
           width: "100%",
           maxWidth: "360px",
@@ -88,9 +99,19 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder="비밀번호"
+          placeholder="비밀번호 (6자 이상)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+          style={inputStyle}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+        />
+        <input
+          type="password"
+          placeholder="비밀번호 확인"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
           required
           style={inputStyle}
           onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
@@ -129,12 +150,12 @@ export default function LoginPage() {
             e.currentTarget.style.color = "#fff";
           }}
         >
-          {loading ? "로그인 중..." : "Log In"}
+          {loading ? "처리 중..." : "Sign Up"}
         </button>
 
         <button
           type="button"
-          onClick={() => router.push("/signup")}
+          onClick={() => router.push("/")}
           style={{
             background: "none",
             border: "none",
@@ -147,7 +168,7 @@ export default function LoginPage() {
           onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
         >
-          계정이 없으신가요? 회원가입
+          이미 계정이 있으신가요? 로그인
         </button>
       </form>
 

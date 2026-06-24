@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Edit2, Check, X, Building2, User, Mail, Phone, FileText, Tag, Calendar, FileDown, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase";
 import Image from "next/image";
 import { campaigns, myApplications as initialApplications } from "@/lib/data";
 import { ApplicationStatus, MyApplication } from "@/lib/types";
@@ -33,6 +34,12 @@ const FILTER_TABS: { key: AppFilter; label: string }[] = [
 
 export default function MyPage() {
   const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
   const [filter, setFilter] = useState<AppFilter>("all");
   const [isEditing, setIsEditing] = useState(false);
   const [apps, setApps] = useState<MyApplication[]>(initialApplications);
@@ -108,7 +115,7 @@ export default function MyPage() {
           My Dashboard
         </button>
         <button
-          onClick={() => router.push("/")}
+          onClick={handleLogout}
           style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontSize: "13px" }}
         >
           <LogOut size={14} /><span>Log Out</span>
