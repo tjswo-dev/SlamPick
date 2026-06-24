@@ -14,6 +14,8 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
   const vat = Math.round(supply * 0.1);
   const total = supply + vat;
 
+  const handlePrint = () => window.print();
+
   return (
     <div
       style={{
@@ -24,6 +26,7 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
+        id="invoice-print-area"
         style={{
           backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb",
           width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto",
@@ -126,9 +129,9 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
             }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#111")}
-            onClick={onClose}
+            onClick={handlePrint}
           >
-            <Download size={14} /> PDF 다운로드
+            <Download size={14} /> PDF 저장 (인쇄)
           </button>
         </div>
       </div>

@@ -52,39 +52,41 @@ export default function Dashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 슬롯 uuid 조회
-    const { data: slotRow } = await supabase
-      .from("slots")
-      .select("id")
-      .eq("campaign_id", application.campaignId)
-      .eq("slot_number", application.slotId)
-      .single();
+    const targetSlotIds = application.slotIds ?? [application.slotId];
 
-    if (!slotRow) return;
+    // 슬롯별 처리
+    for (const slotNumber of targetSlotIds) {
+      const { data: slotRow } = await supabase
+        .from("slots")
+        .select("id")
+        .eq("campaign_id", application.campaignId)
+        .eq("slot_number", slotNumber)
+        .single();
 
-    // applications INSERT
-    await supabase.from("applications").insert({
-      campaign_id: application.campaignId,
-      slot_id: slotRow.id,
-      user_id: user.id,
-      company_name: application.companyName,
-      brand_name: application.brandName,
-      product_name: application.productName,
-      product_url: application.productUrl || null,
-      product_description: application.productDescription || null,
-      exposure_point: application.exposurePoint || null,
-      reference_video_url: application.referenceVideoUrl || null,
-      precautions: application.precautions || null,
-      contact_name: application.contactName,
-      contact_email: application.contactEmail,
-      contact_phone: application.contactPhone,
-    });
+      if (!slotRow) continue;
 
-    // 슬롯 상태 reserved로 변경
-    await supabase
-      .from("slots")
-      .update({ status: "reserved", brand_name: application.brandName })
-      .eq("id", slotRow.id);
+      await supabase.from("applications").insert({
+        campaign_id: application.campaignId,
+        slot_id: slotRow.id,
+        user_id: user.id,
+        company_name: application.companyName,
+        brand_name: application.brandName,
+        product_name: application.productName,
+        product_url: application.productUrl || null,
+        product_description: application.productDescription || null,
+        exposure_point: application.exposurePoint || null,
+        reference_video_url: application.referenceVideoUrl || null,
+        precautions: application.precautions || null,
+        contact_name: application.contactName,
+        contact_email: application.contactEmail,
+        contact_phone: application.contactPhone,
+      });
+
+      await supabase
+        .from("slots")
+        .update({ status: "reserved", brand_name: application.brandName })
+        .eq("id", slotRow.id);
+    }
 
     // 로컬 상태 갱신
     setCampaigns((prev) =>
@@ -92,7 +94,7 @@ export default function Dashboard() {
         c.id !== application.campaignId ? c : {
           ...c,
           slots: c.slots.map((s) =>
-            s.id === application.slotId
+            targetSlotIds.includes(s.id)
               ? { ...s, status: "reserved" as const, brandName: application.brandName }
               : s
           ),

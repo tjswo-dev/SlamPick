@@ -13,6 +13,7 @@ interface SlotModalProps {
 
 export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotModalProps) {
   const [step, setStep] = useState<"guide" | "form" | "success">("guide");
+  const [reserveAll, setReserveAll] = useState(false);
   const [form, setForm] = useState({
     companyName: "",
     brandName: "",
@@ -27,15 +28,18 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
     contactPhone: "",
   });
 
-  const availableCount = campaign.slots.filter((s) => s.status === "available").length;
+  const availableSlots = campaign.slots.filter((s) => s.status === "available");
+  const availableCount = availableSlots.length;
   const thisSlot = campaign.slots.find((s) => s.id === slotId);
   const isClosed = thisSlot?.status === "filled" || thisSlot?.status === "reserved";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const targetSlotIds = reserveAll ? availableSlots.map((s) => s.id) : [slotId];
     onSubmit({
       campaignId: campaign.id,
-      slotId,
+      slotId: targetSlotIds[0],
+      slotIds: reserveAll ? targetSlotIds : undefined,
       budget: campaign.perSlotCost.toLocaleString("ko-KR") + "원",
       ...form,
     });
@@ -253,15 +257,17 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
                 >
                   이 슬롯 신청하기 →
                 </button>
-                <button
-                  onClick={() => setStep("form")}
-                  title="남은 슬롯 전체를 단독으로 선점합니다"
-                  style={{ padding: "10px 12px", backgroundColor: "transparent", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#9ca3af", fontSize: "11px", fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap", lineHeight: "1.4", transition: "all 0.15s", textAlign: "center" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#374151"; e.currentTarget.style.color = "#374151"; e.currentTarget.style.backgroundColor = "#f9fafb"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.backgroundColor = "transparent"; }}
-                >
-                  모두<br />선점하기
-                </button>
+                {availableCount > 1 && (
+                  <button
+                    onClick={() => { setReserveAll(true); setStep("form"); }}
+                    title={`남은 ${availableCount}개 슬롯 전체를 단독으로 선점합니다`}
+                    style={{ padding: "10px 12px", backgroundColor: "transparent", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#9ca3af", fontSize: "11px", fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap", lineHeight: "1.4", transition: "all 0.15s", textAlign: "center" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#374151"; e.currentTarget.style.color = "#374151"; e.currentTarget.style.backgroundColor = "#f9fafb"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.backgroundColor = "transparent"; }}
+                  >
+                    모두<br />선점하기
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -269,9 +275,20 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
 
         {step === "form" && (
           <form onSubmit={handleSubmit} style={{ padding: "0 24px 24px" }}>
-            <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "20px", lineHeight: "1.6" }}>
-              브랜드 정보를 입력해 주세요. 제출 후 영업일 1일 내 담당자가 연락 드립니다.
-            </p>
+            {reserveAll ? (
+              <div style={{ marginBottom: "20px", padding: "10px 14px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px" }}>
+                <p style={{ fontSize: "13px", color: "#16a34a", fontWeight: "700", marginBottom: "2px" }}>
+                  슬롯 {availableSlots.map((s) => `#${s.id}`).join(", ")} — 전체 선점 신청
+                </p>
+                <p style={{ fontSize: "11px", color: "#6b7280" }}>
+                  {availableCount}개 슬롯 · 총 {((campaign.perSlotCost * availableCount) / 10000).toLocaleString("ko-KR")}만원
+                </p>
+              </div>
+            ) : (
+              <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "20px", lineHeight: "1.6" }}>
+                브랜드 정보를 입력해 주세요. 제출 후 영업일 1일 내 담당자가 연락 드립니다.
+              </p>
+            )}
 
             <FormGroup label="회사명 *">
               <FormInput
@@ -498,8 +515,17 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#9ca3af" }}>슬롯</span>
                 <span>
-                  <span style={{ color: "#16a34a", fontWeight: "700" }}>#{slotId}</span>
-                  <span style={{ color: "#9ca3af" }}> · {(campaign.perSlotCost / 10000).toLocaleString("ko-KR")}만원</span>
+                  {reserveAll ? (
+                    <>
+                      <span style={{ color: "#16a34a", fontWeight: "700" }}>{availableSlots.map((s) => `#${s.id}`).join(", ")}</span>
+                      <span style={{ color: "#9ca3af" }}> · 총 {((campaign.perSlotCost * availableCount) / 10000).toLocaleString("ko-KR")}만원</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ color: "#16a34a", fontWeight: "700" }}>#{slotId}</span>
+                      <span style={{ color: "#9ca3af" }}> · {(campaign.perSlotCost / 10000).toLocaleString("ko-KR")}만원</span>
+                    </>
+                  )}
                 </span>
               </div>
             </div>

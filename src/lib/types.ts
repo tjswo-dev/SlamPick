@@ -59,6 +59,7 @@ export interface Campaign {
 export interface BrandApplication {
   campaignId: string;
   slotId: number;
+  slotIds?: number[];  // 모두 선점하기 — 여러 슬롯 동시 신청
   companyName: string;
   brandName: string;
   productName: string;
