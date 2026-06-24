@@ -42,7 +42,7 @@ export default function Dashboard() {
       if (filterMonth !== "all" && !c.shootingDate.startsWith(filterMonth)) return false;
       return true;
     });
-  }, [filterPlatform, filterCountry, filterMonth]);
+  }, [campaigns, filterPlatform, filterCountry, filterMonth]);
 
   const selectedCampaign = selectedSlot
     ? campaigns.find((c) => c.id === selectedSlot.campaignId)
