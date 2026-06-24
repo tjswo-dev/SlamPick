@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Edit2, Check, X, Building2, User, Mail, Phone, FileText, Tag, Calendar, FileDown, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import Image from "next/image";
-import { campaigns, myApplications as initialApplications } from "@/lib/data";
-import { ApplicationStatus, MyApplication } from "@/lib/types";
+import { Campaign, ApplicationStatus, MyApplication } from "@/lib/types";
 import InvoiceModal from "@/components/InvoiceModal";
 
 type AppFilter = "all" | ApplicationStatus | "payment_progress";
@@ -40,21 +39,123 @@ export default function MyPage() {
     await supabase.auth.signOut();
     router.push("/");
   };
+
   const [filter, setFilter] = useState<AppFilter>("all");
   const [isEditing, setIsEditing] = useState(false);
-  const [apps, setApps] = useState<MyApplication[]>(initialApplications);
+  const [apps, setApps] = useState<MyApplication[]>([]);
+  const [campaignMap, setCampaignMap] = useState<Record<string, Campaign>>({});
+  const [dbLoading, setDbLoading] = useState(true);
   const [invoiceTarget, setInvoiceTarget] = useState<MyApplication | null>(null);
   const [paymentDates, setPaymentDates] = useState<Record<string, string>>({});
 
   const [profile, setProfile] = useState({
-    companyName: "(주)브랜드코리아",
-    brandName: "브랜드K",
-    contactName: "김담당",
-    email: "brand@korea.com",
-    phone: "010-1234-5678",
-    businessNumber: "123-45-67890",
+    companyName: "", brandName: "", contactName: "",
+    email: "", phone: "", businessNumber: "",
   });
   const [draft, setDraft] = useState({ ...profile });
+
+  // 유저 프로필 + 신청 내역 + 캠페인 정보 로드
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 프로필
+      const { data: userRow } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (userRow) {
+        const p = {
+          companyName: userRow.company_name || "",
+          brandName: userRow.brand_name || "",
+          contactName: userRow.contact_name || "",
+          email: userRow.email || "",
+          phone: userRow.phone || "",
+          businessNumber: userRow.business_number || "",
+        };
+        setProfile(p);
+        setDraft(p);
+      }
+
+      // 신청 내역
+      const { data: appRows } = await supabase
+        .from("applications")
+        .select("*, invoices(*), slots(slot_number)")
+        .eq("user_id", user.id)
+        .order("applied_at", { ascending: false });
+
+      if (appRows) {
+        const mapped: MyApplication[] = appRows.map((r) => ({
+          id: r.id,
+          campaignId: r.campaign_id,
+          slotId: r.slots?.slot_number ?? 0,
+          status: r.status as ApplicationStatus,
+          appliedAt: r.applied_at?.slice(0, 10) ?? "",
+          companyName: r.company_name,
+          brandName: r.brand_name,
+          productName: r.product_name,
+          invoiceNumber: r.invoices?.invoice_number,
+          invoiceIssuedAt: r.invoices?.issued_at?.slice(0, 10),
+          paymentDueDate: r.invoices?.payment_due_date,
+          expectedPaymentDate: r.invoices?.expected_payment_date,
+        }));
+        setApps(mapped);
+
+        // 연관 캠페인 로드
+        const ids = [...new Set(appRows.map((r) => r.campaign_id))];
+        if (ids.length > 0) {
+          const { data: campRows } = await supabase
+            .from("campaigns")
+            .select("*, influencer:influencers(*), slots(*)")
+            .in("id", ids);
+
+          if (campRows) {
+            const map: Record<string, Campaign> = {};
+            campRows.forEach((row) => {
+              map[row.id] = {
+                id: row.id,
+                influencer: {
+                  name: row.influencer.name,
+                  handle: row.influencer.handle,
+                  platform: row.influencer.platform,
+                  followers: row.influencer.followers,
+                  category: row.influencer.category,
+                  thumbnailUrl: row.thumbnail_url || row.influencer.thumbnail_url,
+                  profileUrl: row.influencer.profile_url,
+                },
+                contentTitle: row.content_title,
+                contentType: row.content_type,
+                recruitDeadline: row.recruit_deadline,
+                shootingDate: row.shooting_date,
+                publishDate: row.publish_date,
+                totalSlots: row.total_slots,
+                slots: row.slots
+                  .sort((a: { slot_number: number }, b: { slot_number: number }) => a.slot_number - b.slot_number)
+                  .map((s: { slot_number: number; status: string; brand_name?: string }) => ({
+                    id: s.slot_number,
+                    status: s.status as "available" | "reserved" | "filled",
+                    brandName: s.brand_name ?? undefined,
+                  })),
+                totalCost: row.total_cost,
+                perSlotCost: row.per_slot_cost,
+                contentGuide: row.content_guide,
+                restrictions: row.restrictions,
+                status: row.status,
+                country: row.country,
+              };
+            });
+            setCampaignMap(map);
+          }
+        }
+      }
+
+      setDbLoading(false);
+    };
+    load();
+  }, []);
 
   const STATUS_ORDER: Record<string, number> = {
     approved: 0, payment_pending: 0,
@@ -85,16 +186,42 @@ export default function MyPage() {
     completed:         apps.filter((a) => a.status === "completed").length,
   };
 
-  const handleSave = () => { setProfile({ ...draft }); setIsEditing(false); };
+  const handleSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("users").update({
+        company_name: draft.companyName,
+        brand_name: draft.brandName,
+        contact_name: draft.contactName,
+        phone: draft.phone,
+        business_number: draft.businessNumber,
+      }).eq("id", user.id);
+    }
+    setProfile({ ...draft });
+    setIsEditing(false);
+  };
   const handleCancel = () => { setDraft({ ...profile }); setIsEditing(false); };
 
   const updateApp = (id: string, patch: Partial<MyApplication>) => {
     setApps((prev) => prev.map((a) => a.id === id ? { ...a, ...patch } : a));
   };
 
-  const handlePaymentDone = (app: MyApplication) => {
+  const handlePaymentDone = async (app: MyApplication) => {
     const date = paymentDates[app.id] || app.expectedPaymentDate;
     if (!date) return;
+
+    // invoices 테이블의 expected_payment_date 업데이트
+    await supabase
+      .from("invoices")
+      .update({ expected_payment_date: date, status: "payment_confirming" })
+      .eq("application_id", app.id);
+
+    // applications 상태 업데이트
+    await supabase
+      .from("applications")
+      .update({ status: "payment_confirming" })
+      .eq("id", app.id);
+
     updateApp(app.id, { status: "payment_confirming", expectedPaymentDate: date });
   };
 
@@ -123,6 +250,12 @@ export default function MyPage() {
       </nav>
 
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 28px" }}>
+        {dbLoading && (
+          <div style={{ textAlign: "center", padding: "80px 0", color: "#9ca3af", fontSize: "14px" }}>
+            불러오는 중...
+          </div>
+        )}
+        {!dbLoading && (<>
         {/* Title */}
         <div style={{ marginBottom: "32px", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: "900", color: "#111", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: "10px" }}>
@@ -211,7 +344,7 @@ export default function MyPage() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {filtered.map((app) => {
-                  const campaign = campaigns.find((c) => c.id === app.campaignId);
+                  const campaign = campaignMap[app.campaignId];
                   if (!campaign) return null;
                   const meta = STATUS_META[app.status];
                   const currentDate = paymentDates[app.id] || app.expectedPaymentDate || "";
@@ -369,11 +502,12 @@ export default function MyPage() {
             )}
           </div>
         </div>
+        </>)}
       </div>
 
       {/* Invoice Modal */}
       {invoiceTarget && (() => {
-        const campaign = campaigns.find((c) => c.id === invoiceTarget.campaignId);
+        const campaign = campaignMap[invoiceTarget.campaignId];
         if (!campaign) return null;
         return <InvoiceModal application={invoiceTarget} campaign={campaign} onClose={() => setInvoiceTarget(null)} />;
       })()}
