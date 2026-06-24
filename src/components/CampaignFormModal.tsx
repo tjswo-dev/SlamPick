@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export interface CampaignEditData {
@@ -49,54 +49,76 @@ interface FormState {
   country: "us" | "jp" | "cn";
   thumbnailUrl: string;
   status: "open" | "closing";
-  contentGuide: string[];
+  concept: string;
+  contentGuide: string[];   // 슬롯 수만큼 자동 생성
   restrictions: string[];
 }
 
-const emptyForm: FormState = {
-  infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "",
-  infCategory: "", infProfileUrl: "", infThumbnailUrl: "",
-  contentTitle: "", contentType: "", recruitDeadline: "",
-  shootingDate: "", publishDate: "",
-  totalSlots: 5, perSlotCost: 0,
-  country: "us", thumbnailUrl: "", status: "open",
-  contentGuide: [""], restrictions: [""],
-};
+function initForm(mode: "create" | "edit", existing?: CampaignEditData): FormState {
+  if (mode === "edit" && existing) {
+    const conceptItem = existing.contentGuide.find((g) => g.startsWith("컨셉:"));
+    const concept = conceptItem ? conceptItem.slice(4).trim() : "";
+    const guides = existing.contentGuide.filter((g) => !g.startsWith("컨셉:"));
+    const n = existing.totalSlots;
+    const paddedGuides = [...guides, ...Array(Math.max(0, n - guides.length)).fill("")].slice(0, n);
+    return {
+      infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "",
+      infCategory: "", infProfileUrl: "", infThumbnailUrl: "",
+      contentTitle: existing.contentTitle,
+      contentType: existing.contentType,
+      recruitDeadline: existing.recruitDeadline,
+      shootingDate: existing.shootingDate,
+      publishDate: existing.publishDate,
+      totalSlots: n,
+      perSlotCost: existing.perSlotCost,
+      country: existing.country,
+      thumbnailUrl: existing.thumbnailUrl,
+      status: existing.status,
+      concept,
+      contentGuide: paddedGuides,
+      restrictions: existing.restrictions.length > 0 ? existing.restrictions : [""],
+    };
+  }
+  return {
+    infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "",
+    infCategory: "", infProfileUrl: "", infThumbnailUrl: "",
+    contentTitle: "", contentType: "", recruitDeadline: "",
+    shootingDate: "", publishDate: "",
+    totalSlots: 5, perSlotCost: 0,
+    country: "us", thumbnailUrl: "", status: "open",
+    concept: "",
+    contentGuide: Array(5).fill(""),
+    restrictions: [""],
+  };
+}
 
 export default function CampaignFormModal({ mode, existing, onClose, onSaved }: Props) {
   const supabase = createClient();
-
-  const [form, setForm] = useState<FormState>(() =>
-    mode === "edit" && existing
-      ? {
-          ...emptyForm,
-          contentTitle: existing.contentTitle,
-          contentType: existing.contentType,
-          recruitDeadline: existing.recruitDeadline,
-          shootingDate: existing.shootingDate,
-          publishDate: existing.publishDate,
-          totalSlots: existing.totalSlots,
-          perSlotCost: existing.perSlotCost,
-          country: existing.country,
-          thumbnailUrl: existing.thumbnailUrl,
-          status: existing.status,
-          contentGuide: existing.contentGuide.length > 0 ? existing.contentGuide : [""],
-          restrictions: existing.restrictions.length > 0 ? existing.restrictions : [""],
-        }
-      : { ...emptyForm }
-  );
-
+  const [form, setForm] = useState<FormState>(() => initForm(mode, existing));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [openGuides, setOpenGuides] = useState<Set<number>>(new Set([0])); // 첫 번째 기본 열림
+
+  // 슬롯 수 변경 시 contentGuide 배열 크기 동기화
+  useEffect(() => {
+    setForm((prev) => {
+      const n = prev.totalSlots;
+      if (prev.contentGuide.length === n) return prev;
+      if (prev.contentGuide.length < n) {
+        return { ...prev, contentGuide: [...prev.contentGuide, ...Array(n - prev.contentGuide.length).fill("")] };
+      }
+      return { ...prev, contentGuide: prev.contentGuide.slice(0, n) };
+    });
+  }, [form.totalSlots]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const setGuide = (i: number, val: string) =>
     setForm((p) => { const a = [...p.contentGuide]; a[i] = val; return { ...p, contentGuide: a }; });
-  const addGuide = () => setForm((p) => ({ ...p, contentGuide: [...p.contentGuide, ""] }));
-  const removeGuide = (i: number) =>
-    setForm((p) => ({ ...p, contentGuide: p.contentGuide.filter((_, idx) => idx !== i) }));
+
+  const toggleGuide = (i: number) =>
+    setOpenGuides((prev) => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
 
   const setRestriction = (i: number, val: string) =>
     setForm((p) => { const a = [...p.restrictions]; a[i] = val; return { ...p, restrictions: a }; });
@@ -115,11 +137,14 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
       setError("필수 항목(*)을 모두 입력해주세요.");
       return;
     }
-
     setSaving(true);
     setError("");
 
-    const guideArr = form.contentGuide.filter((g) => g.trim() !== "");
+    // 컨셉을 배열 맨 앞에 "컨셉: ..." 형식으로 삽입
+    const guideArr = [
+      ...(form.concept.trim() ? [`컨셉: ${form.concept.trim()}`] : []),
+      ...form.contentGuide.filter((g) => g.trim() !== ""),
+    ];
     const restrictArr = form.restrictions.filter((r) => r.trim() !== "");
 
     const campaignPayload = {
@@ -139,7 +164,6 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
     };
 
     if (mode === "create") {
-      // 1. 인플루언서 생성
       const { data: inf, error: infErr } = await supabase
         .from("influencers")
         .insert({
@@ -155,26 +179,16 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
         .select("id")
         .single();
 
-      if (infErr || !inf) {
-        setError("인플루언서 저장 중 오류가 발생했습니다.");
-        setSaving(false);
-        return;
-      }
+      if (infErr || !inf) { setError("인플루언서 저장 중 오류가 발생했습니다."); setSaving(false); return; }
 
-      // 2. 캠페인 생성
       const { data: camp, error: campErr } = await supabase
         .from("campaigns")
         .insert({ ...campaignPayload, influencer_id: inf.id })
         .select("id")
         .single();
 
-      if (campErr || !camp) {
-        setError("캠페인 저장 중 오류가 발생했습니다.");
-        setSaving(false);
-        return;
-      }
+      if (campErr || !camp) { setError("캠페인 저장 중 오류가 발생했습니다."); setSaving(false); return; }
 
-      // 3. 슬롯 생성
       await supabase.from("slots").insert(
         Array.from({ length: form.totalSlots }, (_, i) => ({
           campaign_id: camp.id,
@@ -183,16 +197,8 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
         }))
       );
     } else {
-      const { error: updErr } = await supabase
-        .from("campaigns")
-        .update(campaignPayload)
-        .eq("id", existing!.id);
-
-      if (updErr) {
-        setError("수정 중 오류가 발생했습니다.");
-        setSaving(false);
-        return;
-      }
+      const { error: updErr } = await supabase.from("campaigns").update(campaignPayload).eq("id", existing!.id);
+      if (updErr) { setError("수정 중 오류가 발생했습니다."); setSaving(false); return; }
     }
 
     onSaved();
@@ -254,9 +260,11 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
                   <Field label="프로필 URL">
                     <input style={inputStyle} value={form.infProfileUrl} onChange={(e) => set("infProfileUrl", e.target.value)} placeholder="ex. https://youtube.com/@..." />
                   </Field>
-                  <Field label="썸네일 URL *">
-                    <input style={{ ...inputStyle, gridColumn: "span 2" }} value={form.infThumbnailUrl} onChange={(e) => set("infThumbnailUrl", e.target.value)} placeholder="프로필 이미지 URL" />
-                  </Field>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <Field label="썸네일 URL *">
+                      <input style={inputStyle} value={form.infThumbnailUrl} onChange={(e) => set("infThumbnailUrl", e.target.value)} placeholder="프로필 이미지 URL" />
+                    </Field>
+                  </div>
                 </div>
               </Section>
             )}
@@ -283,9 +291,11 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
                     <option value="closing">마감 임박</option>
                   </select>
                 </Field>
-                <Field label="캠페인 썸네일 URL (선택)">
-                  <input style={inputStyle} value={form.thumbnailUrl} onChange={(e) => set("thumbnailUrl", e.target.value)} placeholder="비워두면 인플루언서 이미지 사용" />
-                </Field>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <Field label="캠페인 썸네일 URL (선택)">
+                    <input style={inputStyle} value={form.thumbnailUrl} onChange={(e) => set("thumbnailUrl", e.target.value)} placeholder="비워두면 인플루언서 이미지 사용" />
+                  </Field>
+                </div>
               </div>
             </Section>
 
@@ -312,7 +322,7 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
                     type="number" min={1} max={10}
                     style={{ ...inputStyle, backgroundColor: mode === "edit" ? "#f9fafb" : undefined, color: mode === "edit" ? "#9ca3af" : undefined }}
                     value={form.totalSlots}
-                    onChange={(e) => set("totalSlots", Number(e.target.value))}
+                    onChange={(e) => set("totalSlots", Math.max(1, Math.min(10, Number(e.target.value))))}
                     disabled={mode === "edit"}
                   />
                 </Field>
@@ -329,18 +339,77 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
 
             {/* ── 컨텐츠 가이드 ── */}
             <Section title="컨텐츠 가이드">
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {form.contentGuide.map((item, i) => (
-                  <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <input style={{ ...inputStyle, flex: 1 }} value={item} onChange={(e) => setGuide(i, e.target.value)} placeholder={`가이드 ${i + 1}`} />
-                    <button onClick={() => removeGuide(i)} disabled={form.contentGuide.length <= 1} style={{ background: "none", border: "none", cursor: "pointer", color: "#d1d5db", padding: "4px" }}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                <button onClick={addGuide} style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "1px dashed #d1d5db", borderRadius: "6px", padding: "7px 12px", fontSize: "12px", color: "#9ca3af", cursor: "pointer" }}>
-                  <Plus size={12} /> 항목 추가
-                </button>
+              {/* 컨셉 필드 */}
+              <div style={{ marginBottom: "14px" }}>
+                <label style={{ fontSize: "11px", color: "#6b7280", display: "block", marginBottom: "4px" }}>컨셉</label>
+                <textarea
+                  value={form.concept}
+                  onChange={(e) => set("concept", e.target.value)}
+                  placeholder="캠페인의 전체적인 컨셉을 입력하세요"
+                  rows={3}
+                  style={{ ...inputStyle, resize: "vertical", lineHeight: "1.6" }}
+                />
+              </div>
+
+              {/* 번호 아코디언 */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {form.contentGuide.map((item, i) => {
+                  const isOpen = openGuides.has(i);
+                  const preview = item.trim() || `가이드 ${i + 1} 입력...`;
+                  return (
+                    <div
+                      key={i}
+                      style={{ border: `1px solid ${isOpen ? "#d1d5db" : "#e5e7eb"}`, borderRadius: "8px", overflow: "hidden", transition: "border-color 0.15s" }}
+                    >
+                      {/* 헤더 */}
+                      <button
+                        type="button"
+                        onClick={() => toggleGuide(i)}
+                        style={{
+                          width: "100%", display: "flex", alignItems: "center", gap: "10px",
+                          padding: "10px 12px", background: isOpen ? "#f9fafb" : "#fff",
+                          border: "none", cursor: "pointer", textAlign: "left",
+                          transition: "background 0.15s",
+                        }}
+                      >
+                        <span style={{
+                          width: "22px", height: "22px", borderRadius: "5px", flexShrink: 0,
+                          backgroundColor: isOpen ? "#111" : "#f3f4f6",
+                          color: isOpen ? "#fff" : "#9ca3af",
+                          fontSize: "11px", fontWeight: "700",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.15s",
+                        }}>
+                          {i + 1}
+                        </span>
+                        <span style={{
+                          flex: 1, fontSize: "12px",
+                          color: item.trim() ? "#374151" : "#9ca3af",
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>
+                          {preview}
+                        </span>
+                        <span style={{ color: "#9ca3af", flexShrink: 0 }}>
+                          {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </span>
+                      </button>
+
+                      {/* 본문 */}
+                      {isOpen && (
+                        <div style={{ padding: "10px 12px", borderTop: "1px solid #f3f4f6", backgroundColor: "#fff" }}>
+                          <textarea
+                            value={item}
+                            onChange={(e) => setGuide(i, e.target.value)}
+                            placeholder={`슬롯 ${i + 1}에 대한 콘텐츠 가이드를 입력하세요`}
+                            rows={3}
+                            style={{ ...inputStyle, resize: "vertical", lineHeight: "1.6", backgroundColor: "#f9fafb" }}
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </Section>
 
@@ -355,8 +424,11 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
                     </button>
                   </div>
                 ))}
-                <button onClick={addRestriction} style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "1px dashed #d1d5db", borderRadius: "6px", padding: "7px 12px", fontSize: "12px", color: "#9ca3af", cursor: "pointer" }}>
-                  <Plus size={12} /> 항목 추가
+                <button
+                  onClick={addRestriction}
+                  style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "1px dashed #d1d5db", borderRadius: "6px", padding: "7px 12px", fontSize: "12px", color: "#9ca3af", cursor: "pointer" }}
+                >
+                  + 항목 추가
                 </button>
               </div>
             </Section>
@@ -379,7 +451,6 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
             {saving ? "저장 중..." : mode === "create" ? "캠페인 등록" : "수정 완료"}
           </button>
         </div>
-
       </div>
     </div>
   );
