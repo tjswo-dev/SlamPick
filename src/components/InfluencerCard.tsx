@@ -75,7 +75,7 @@ export default function InfluencerCard({
       }}
     >
       {/* ── Cover thumbnail area ── */}
-      <div style={{ position: "relative", height: "160px", backgroundColor: "#f3f4f6" }}>
+      <div style={{ position: "relative", height: "240px", backgroundColor: "#f3f4f6" }}>
         <Image
           src={influencer.thumbnailUrl}
           alt={influencer.name}
@@ -155,10 +155,10 @@ export default function InfluencerCard({
         {/* Follower count */}
         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
           <Users size={15} color="#9ca3af" />
-          <span style={{ fontSize: "16px", fontWeight: "700", color: "#111" }}>
+          <span style={{ fontSize: "19px", fontWeight: "700", color: "#111" }}>
             {influencer.followers}
           </span>
-          <span style={{ fontSize: "12px", color: "#9ca3af" }}>팔로워</span>
+          <span style={{ fontSize: "14px", color: "#9ca3af" }}>팔로워</span>
         </div>
 
         {/* Platform tag */}
@@ -189,7 +189,7 @@ export default function InfluencerCard({
 
       {/* ── Content title + dates ── */}
       <div style={{ padding: "14px 16px", borderBottom: "1px solid #f3f4f6" }}>
-        <p style={{ fontSize: "16px", color: "#111", fontWeight: "800", lineHeight: "1.4", marginBottom: "12px", letterSpacing: "-0.02em" }}>
+        <p style={{ fontSize: "19px", color: "#111", fontWeight: "800", lineHeight: "1.4", marginBottom: "12px", letterSpacing: "-0.02em" }}>
           {campaign.contentTitle}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -202,12 +202,12 @@ export default function InfluencerCard({
       {/* ── Slots ── */}
       <div style={{ padding: "12px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-          <span style={{ fontSize: "11px", color: "#9ca3af", fontWeight: "500" }}>
+          <span style={{ fontSize: "13px", color: "#9ca3af", fontWeight: "500" }}>
             슬롯 현황 — {availableCount}/{campaign.totalSlots} 남음
           </span>
-          <span style={{ fontSize: "14px", color: "#111", fontWeight: "700" }}>
+          <span style={{ fontSize: "16px", color: "#111", fontWeight: "700" }}>
             {(campaign.perSlotCost / 10000).toLocaleString("ko-KR")}만원
-            <span style={{ fontSize: "11px", color: "#9ca3af", fontWeight: "400" }}>/슬롯</span>
+            <span style={{ fontSize: "13px", color: "#9ca3af", fontWeight: "400" }}>/슬롯</span>
           </span>
         </div>
 
@@ -252,10 +252,10 @@ export default function InfluencerCard({
                   }
                 }}
               >
-                <span style={{ fontSize: "10px", color: isFilled ? "#d1d5db" : isReserved ? "#d97706" : "#16a34a", fontWeight: "700" }}>
+                <span style={{ fontSize: "12px", color: isFilled ? "#d1d5db" : isReserved ? "#d97706" : "#16a34a", fontWeight: "700" }}>
                   #{slot.id}
                 </span>
-                <span style={{ fontSize: "9px", color: isFilled ? "#d1d5db" : isReserved ? "#b45309" : "#15803d" }}>
+                <span style={{ fontSize: "11px", color: isFilled ? "#d1d5db" : isReserved ? "#b45309" : "#15803d" }}>
                   {isFilled ? "마감" : isReserved ? "검토" : "신청"}
                 </span>
               </button>
@@ -335,8 +335,8 @@ function DateChip({
       onMouseLeave={(e) => { if (clickable && !accent) e.currentTarget.style.backgroundColor = "transparent"; }}
     >
       <span style={{ color: accent ?? "#d1d5db" }}>{icon}</span>
-      <span style={{ fontSize: "11px", color: accent ?? "#9ca3af", fontWeight: accent ? "600" : "400", minWidth: "52px" }}>{label}</span>
-      <span style={{ fontSize: "11px", color: accent ?? (clickable ? "#374151" : "#6b7280"), fontWeight: "600" }}>{date}</span>
+      <span style={{ fontSize: "13px", color: accent ?? "#9ca3af", fontWeight: accent ? "600" : "400", minWidth: "58px" }}>{label}</span>
+      <span style={{ fontSize: "13px", color: accent ?? (clickable ? "#374151" : "#6b7280"), fontWeight: "600" }}>{date}</span>
     </div>
   );
 }
