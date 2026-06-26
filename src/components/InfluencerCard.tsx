@@ -75,7 +75,7 @@ export default function InfluencerCard({
       }}
     >
       {/* ── Cover thumbnail area ── */}
-      <div style={{ position: "relative", height: "240px", backgroundColor: "#f3f4f6" }}>
+      <div style={{ position: "relative", height: "360px", backgroundColor: "#f3f4f6" }}>
         <Image
           src={influencer.thumbnailUrl}
           alt={influencer.name}
@@ -189,7 +189,7 @@ export default function InfluencerCard({
 
       {/* ── Content title + dates ── */}
       <div style={{ padding: "14px 16px", borderBottom: "1px solid #f3f4f6" }}>
-        <p style={{ fontSize: "19px", color: "#111", fontWeight: "800", lineHeight: "1.4", marginBottom: "12px", letterSpacing: "-0.02em" }}>
+        <p style={{ fontSize: "19px", color: "#111", fontWeight: "800", lineHeight: "1.4", marginBottom: "12px", letterSpacing: "-0.02em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "53px" }}>
           {campaign.contentTitle}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
