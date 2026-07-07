@@ -244,15 +244,18 @@ export default function AdminPage() {
       dueDate.setDate(dueDate.getDate() + 7);
       const invoiceNumber = `SP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${Math.floor(Math.random() * 9000) + 1000}`;
 
-      await supabase.from("invoices").insert({
+      const { error: invErr } = await supabase.from("invoices").insert({
         application_id: app.id,
         invoice_number: invoiceNumber,
         issued_at: now.toISOString().split("T")[0],
         payment_due_date: dueDate.toISOString().split("T")[0],
         status: "issued",
       });
+      if (invErr) { alert("인보이스 생성 실패: " + invErr.message); return; }
 
-      await supabase.from("applications").update({ status: "approved" }).eq("id", app.id);
+      const { error: appErr } = await supabase.from("applications").update({ status: "approved" }).eq("id", app.id);
+      if (appErr) { alert("승인 처리 실패: " + appErr.message); return; }
+
       setApps((prev) => prev.map((a) => a.id === app.id ? { ...a, status: "approved", invoiceNumber } : a));
     } finally {
       setActionLoading(null);
@@ -262,9 +265,12 @@ export default function AdminPage() {
   const handleReject = async (app: AdminApp) => {
     setActionLoading(app.id + "_reject");
     try {
-      await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+      const { error: appErr } = await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+      if (appErr) { alert("반려 처리 실패: " + appErr.message); return; }
+
       if (app.slotDbId) {
-        await supabase.from("slots").update({ status: "available", brand_name: null }).eq("id", app.slotDbId);
+        const { error: slotErr } = await supabase.from("slots").update({ status: "available", brand_name: null }).eq("id", app.slotDbId);
+        if (slotErr) { alert("슬롯 초기화 실패: " + slotErr.message); return; }
       }
       setApps((prev) => prev.map((a) => a.id === app.id ? { ...a, status: "rejected" } : a));
     } finally {
@@ -275,8 +281,12 @@ export default function AdminPage() {
   const handleConfirmPayment = async (app: AdminApp) => {
     setActionLoading(app.id + "_confirm");
     try {
-      await supabase.from("invoices").update({ status: "paid" }).eq("application_id", app.id);
-      await supabase.from("applications").update({ status: "active" }).eq("id", app.id);
+      const { error: invErr } = await supabase.from("invoices").update({ status: "paid" }).eq("application_id", app.id);
+      if (invErr) { alert("인보이스 갱신 실패: " + invErr.message); return; }
+
+      const { error: appErr } = await supabase.from("applications").update({ status: "active" }).eq("id", app.id);
+      if (appErr) { alert("입금 확인 처리 실패: " + appErr.message); return; }
+
       if (app.slotDbId) {
         await supabase.from("slots").update({ status: "filled" }).eq("id", app.slotDbId);
       }
@@ -289,7 +299,8 @@ export default function AdminPage() {
   const handleComplete = async (app: AdminApp) => {
     setActionLoading(app.id + "_complete");
     try {
-      await supabase.from("applications").update({ status: "completed" }).eq("id", app.id);
+      const { error } = await supabase.from("applications").update({ status: "completed" }).eq("id", app.id);
+      if (error) { alert("완료 처리 실패: " + error.message); return; }
       setApps((prev) => prev.map((a) => a.id === app.id ? { ...a, status: "completed" } : a));
     } finally {
       setActionLoading(null);
