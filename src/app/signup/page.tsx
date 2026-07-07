@@ -29,12 +29,20 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       setLoading(false);
       return;
+    }
+
+    // public.users 테이블에 row 생성 (없으면 insert, 있으면 무시)
+    if (data.user) {
+      await supabase.from("users").upsert({
+        id: data.user.id,
+        email: data.user.email ?? email,
+      }, { onConflict: "id" });
     }
 
     router.push("/dashboard");

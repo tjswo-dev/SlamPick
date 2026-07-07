@@ -8,12 +8,14 @@ interface SlotModalProps {
   campaign: Campaign;
   slotId: number;
   onClose: () => void;
-  onSubmit: (application: BrandApplication) => void;
+  onSubmit: (application: BrandApplication) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotModalProps) {
   const [step, setStep] = useState<"guide" | "form" | "success">("guide");
   const [reserveAll, setReserveAll] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
     companyName: "",
     brandName: "",
@@ -33,16 +35,23 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
   const thisSlot = campaign.slots.find((s) => s.id === slotId);
   const isClosed = thisSlot?.status === "filled" || thisSlot?.status === "reserved";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
+    setSubmitting(true);
     const targetSlotIds = reserveAll ? availableSlots.map((s) => s.id) : [slotId];
-    onSubmit({
+    const result = await onSubmit({
       campaignId: campaign.id,
       slotId: targetSlotIds[0],
       slotIds: reserveAll ? targetSlotIds : undefined,
       budget: campaign.perSlotCost.toLocaleString("ko-KR") + "원",
       ...form,
     });
+    setSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error ?? "신청 중 오류가 발생했습니다. 다시 시도해주세요.");
+      return;
+    }
     setStep("success");
   };
 
@@ -410,10 +419,17 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
               </span>
             </div>
 
+            {submitError && (
+              <div style={{ padding: "10px 14px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", marginBottom: "12px" }}>
+                <p style={{ fontSize: "13px", color: "#dc2626" }}>{submitError}</p>
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: "8px" }}>
               <button
                 type="button"
                 onClick={() => setStep("guide")}
+                disabled={submitting}
                 style={{
                   flex: 1,
                   padding: "13px",
@@ -423,38 +439,33 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
                   borderRadius: "8px",
                   fontSize: "13px",
                   fontWeight: "500",
-                  cursor: "pointer",
+                  cursor: submitting ? "default" : "pointer",
                   transition: "all 0.15s",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#9ca3af";
-                  e.currentTarget.style.color = "#374151";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#e5e7eb";
-                  e.currentTarget.style.color = "#6b7280";
-                }}
+                onMouseEnter={(e) => { if (!submitting) { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#374151"; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#6b7280"; }}
               >
                 이전
               </button>
               <button
                 type="submit"
+                disabled={submitting}
                 style={{
                   flex: 2,
                   padding: "13px",
-                  backgroundColor: "#111",
+                  backgroundColor: submitting ? "#6b7280" : "#111",
                   color: "#fff",
                   border: "none",
                   borderRadius: "8px",
                   fontSize: "14px",
                   fontWeight: "700",
-                  cursor: "pointer",
+                  cursor: submitting ? "default" : "pointer",
                   transition: "background-color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#111")}
+                onMouseEnter={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = "#374151"; }}
+                onMouseLeave={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = "#111"; }}
               >
-                탑승 신청 완료
+                {submitting ? "신청 중..." : "탑승 신청 완료"}
               </button>
             </div>
           </form>

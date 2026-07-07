@@ -37,6 +37,7 @@ export interface Campaign {
     handle: string;
     platform: "youtube" | "instagram" | "tiktok" | "xiaohongshu";
     followers: string;
+    likesAndSaves?: string;
     category: string;
     thumbnailUrl: string;
     profileUrl: string;

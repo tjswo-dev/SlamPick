@@ -52,24 +52,31 @@ export default function Dashboard() {
     ? campaigns.find((c) => c.id === selectedSlot.campaignId)
     : null;
 
-  const handleApplication = async (application: BrandApplication) => {
+  const handleApplication = async (application: BrandApplication): Promise<{ ok: boolean; error?: string }> => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) return { ok: false, error: "로그인이 필요합니다." };
+
+    // 로그인한 유저의 public.users row 보장 (없으면 생성)
+    await supabase.from("users").upsert(
+      { id: user.id, email: user.email ?? "" },
+      { onConflict: "id" }
+    );
 
     const targetSlotIds = application.slotIds ?? [application.slotId];
 
-    // 슬롯별 처리
     for (const slotNumber of targetSlotIds) {
-      const { data: slotRow } = await supabase
+      const { data: slotRow, error: slotErr } = await supabase
         .from("slots")
         .select("id")
         .eq("campaign_id", application.campaignId)
         .eq("slot_number", slotNumber)
         .single();
 
-      if (!slotRow) continue;
+      if (slotErr || !slotRow) {
+        return { ok: false, error: `슬롯 #${slotNumber}을 찾을 수 없습니다.` };
+      }
 
-      await supabase.from("applications").insert({
+      const { error: appErr } = await supabase.from("applications").insert({
         campaign_id: application.campaignId,
         slot_id: slotRow.id,
         user_id: user.id,
@@ -86,13 +93,21 @@ export default function Dashboard() {
         contact_phone: application.contactPhone,
       });
 
-      await supabase
+      if (appErr) {
+        return { ok: false, error: "신청 저장에 실패했습니다: " + appErr.message };
+      }
+
+      const { error: slotUpdateErr } = await supabase
         .from("slots")
         .update({ status: "reserved", brand_name: application.brandName })
         .eq("id", slotRow.id);
+
+      if (slotUpdateErr) {
+        return { ok: false, error: "슬롯 상태 업데이트 실패: " + slotUpdateErr.message };
+      }
     }
 
-    // 로컬 상태 갱신
+    // 로컬 상태 갱신 (DB 성공 후에만)
     setCampaigns((prev) =>
       prev.map((c) =>
         c.id !== application.campaignId ? c : {
@@ -105,6 +120,8 @@ export default function Dashboard() {
         }
       )
     );
+
+    return { ok: true };
   };
 
   return (

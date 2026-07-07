@@ -14,7 +14,14 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
   const vat = Math.round(supply * 0.1);
   const total = supply + vat;
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const style = document.createElement("style");
+    style.id = "invoice-print-style";
+    style.textContent = `@media print { body > * { visibility: hidden; } #invoice-print-area, #invoice-print-area * { visibility: visible; } #invoice-print-area { position: fixed; top: 0; left: 0; width: 100%; padding: 20px; } }`;
+    document.head.appendChild(style);
+    window.print();
+    document.head.removeChild(style);
+  };
 
   return (
     <div
@@ -56,9 +63,9 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
         <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Invoice meta */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-            <MetaRow label="인보이스 번호" value={application.invoiceNumber!} accent />
-            <MetaRow label="발행일"        value={application.invoiceIssuedAt!} />
-            <MetaRow label="납부 기한"     value={application.paymentDueDate!} accent />
+            <MetaRow label="인보이스 번호" value={application.invoiceNumber ?? "-"} accent />
+            <MetaRow label="발행일"        value={application.invoiceIssuedAt ?? "-"} />
+            <MetaRow label="납부 기한"     value={application.paymentDueDate ?? "-"} accent />
             <MetaRow label="슬롯"          value={`#${application.slotId}`} />
           </div>
 
@@ -115,7 +122,7 @@ export default function InvoiceModal({ application, campaign, onClose }: Invoice
               <BankRow label="은행"     value="신한은행" />
               <BankRow label="계좌번호" value="110-123-456789" />
               <BankRow label="예금주"   value="SLAM GLOBAL Inc." />
-              <BankRow label="납부 기한" value={application.paymentDueDate!} highlight />
+              <BankRow label="납부 기한" value={application.paymentDueDate ?? "-"} highlight />
             </div>
           </div>
 

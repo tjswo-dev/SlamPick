@@ -73,6 +73,7 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
         handle: influencer.handle ?? "",
         platform: influencer.platform ?? "youtube",
         followers: influencer.followers ?? "",
+        likesAndSaves: influencer.likes_saves ?? undefined,
         category: influencer.category ?? "",
         thumbnailUrl: row.thumbnail_url || influencer.thumbnail_url || "",
         profileUrl: influencer.profile_url ?? "",

@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil, Trash2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Clock, BarChart2, Users, Layers, Plus, Pencil, Trash2, ChevronDown, ChevronUp, ExternalLink, Copy, Check, FileDown } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { ApplicationStatus } from "@/lib/types";
 import CampaignFormModal, { type CampaignEditData } from "@/components/CampaignFormModal";
+import InvoiceModal from "@/components/InvoiceModal";
 
 const ADMIN_EMAILS = ["admin@slam-global.com"];
 
@@ -34,6 +35,9 @@ interface AdminApp {
   status: ApplicationStatus;
   appliedAt: string;
   invoiceNumber?: string;
+  invoiceIssuedAt?: string;
+  paymentDueDate?: string;
+  expectedPaymentDate?: string;
 }
 
 interface AdminCampaign {
@@ -67,10 +71,11 @@ const STATUS_META: Record<ApplicationStatus, { label: string; color: string; bg:
   rejected:           { label: "반려",         color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
 };
 
-type AppFilter = "all" | "pending" | "payment_confirming" | "active" | "completed" | "rejected";
+type AppFilter = "all" | "pending" | "payment_waiting" | "payment_confirming" | "active" | "completed" | "rejected";
 const FILTER_TABS: { key: AppFilter; label: string }[] = [
   { key: "all",               label: "전체" },
   { key: "pending",           label: "신청 중" },
+  { key: "payment_waiting",   label: "결제 대기" },
   { key: "payment_confirming",label: "입금 확인 중" },
   { key: "active",            label: "진행 중" },
   { key: "completed",         label: "완료" },
@@ -94,6 +99,19 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [campaignModal, setCampaignModal] = useState<{ open: boolean; mode: "create" | "edit"; target?: CampaignEditData }>({ open: false, mode: "create" });
   const [expandedAppId, setExpandedAppId] = useState<string | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+  const [invoiceTarget, setInvoiceTarget] = useState<AdminApp | null>(null);
+  const [slotEditTarget, setSlotEditTarget] = useState<{
+    campaignId: string;
+    campaignTitle: string;
+    slot: { number: number; status: string; brandName?: string };
+  } | null>(null);
+
+  const handleCopyEmail = (email: string) => {
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(email);
+    setTimeout(() => setCopiedEmail(null), 2000);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -113,7 +131,7 @@ export default function AdminPage() {
         status, applied_at,
         slots(id, slot_number),
         campaigns(id, content_title, per_slot_cost, influencer:influencers!campaigns_influencer_id_fkey(name, platform, thumbnail_url)),
-        invoices(invoice_number)
+        invoices(invoice_number, issued_at, payment_due_date, expected_payment_date)
       `)
       .order("applied_at", { ascending: false });
 
@@ -123,7 +141,7 @@ export default function AdminPage() {
         const row = r as any;
         const slot = (Array.isArray(row.slots) ? row.slots[0] : row.slots) as { id: string; slot_number: number } | null;
         const camp = (Array.isArray(row.campaigns) ? row.campaigns[0] : row.campaigns) as { content_title: string; per_slot_cost: number; influencer: { name: string; platform: string; thumbnail_url: string } } | null;
-        const inv = (Array.isArray(row.invoices) ? row.invoices[0] : row.invoices) as { invoice_number?: string } | null;
+        const inv = (Array.isArray(row.invoices) ? row.invoices[0] : row.invoices) as { invoice_number?: string; issued_at?: string; payment_due_date?: string; expected_payment_date?: string } | null;
         return {
           id: row.id,
           slotDbId: slot?.id ?? "",
@@ -148,6 +166,9 @@ export default function AdminPage() {
           status: row.status as ApplicationStatus,
           appliedAt: row.applied_at?.slice(0, 10) ?? "",
           invoiceNumber: inv?.invoice_number,
+          invoiceIssuedAt: inv?.issued_at?.slice(0, 10),
+          paymentDueDate: inv?.payment_due_date,
+          expectedPaymentDate: inv?.expected_payment_date,
         };
       }));
     }
@@ -301,6 +322,27 @@ export default function AdminPage() {
     setCampaigns((prev) => prev.filter((c) => c.id !== campaign.id));
   };
 
+  const handleSaveSlot = async (campaignId: string, slotNumber: number, newStatus: string, newBrandName: string) => {
+    const brandNameValue = newStatus === "available" ? null : (newBrandName.trim() || null);
+    const { error } = await supabase
+      .from("slots")
+      .update({ status: newStatus, brand_name: brandNameValue })
+      .eq("campaign_id", campaignId)
+      .eq("slot_number", slotNumber);
+    if (error) { alert("저장 실패: " + error.message); return; }
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id !== campaignId ? c : {
+          ...c,
+          slots: c.slots.map((s) =>
+            s.number !== slotNumber ? s : { ...s, status: newStatus, brandName: brandNameValue ?? undefined }
+          ),
+        }
+      )
+    );
+    setSlotEditTarget(null);
+  };
+
   const handleToggleCampaignStatus = async (campaign: AdminCampaign) => {
     const newStatus = campaign.status === "open" ? "closing" : "open";
     await supabase.from("campaigns").update({ status: newStatus }).eq("id", campaign.id);
@@ -309,12 +351,14 @@ export default function AdminPage() {
 
   const filteredApps = useMemo(() => {
     if (appFilter === "all") return apps;
+    if (appFilter === "payment_waiting") return apps.filter((a) => a.status === "approved" || a.status === "payment_pending");
     return apps.filter((a) => a.status === appFilter);
   }, [apps, appFilter]);
 
   const counts: Record<AppFilter, number> = {
     all: apps.length,
     pending: apps.filter((a) => a.status === "pending").length,
+    payment_waiting: apps.filter((a) => a.status === "approved" || a.status === "payment_pending").length,
     payment_confirming: apps.filter((a) => a.status === "payment_confirming").length,
     active: apps.filter((a) => a.status === "active").length,
     completed: apps.filter((a) => a.status === "completed").length,
@@ -407,7 +451,7 @@ export default function AdminPage() {
               {FILTER_TABS.map(({ key, label }) => {
                 const count = counts[key];
                 const isActive = appFilter === key;
-                const isAlert = (key === "pending" || key === "payment_confirming") && count > 0;
+                const isAlert = (key === "pending" || key === "payment_waiting" || key === "payment_confirming") && count > 0;
                 return (
                   <button
                     key={key}
@@ -488,12 +532,17 @@ export default function AdminPage() {
                         </div>
 
                         {/* Status */}
-                        <div style={{ flexShrink: 0 }}>
+                        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
                           <span style={{ fontSize: "11px", fontWeight: "600", padding: "3px 10px", backgroundColor: meta.bg, border: `1px solid ${meta.border}`, borderRadius: "20px", color: meta.color }}>
                             {meta.label}
                           </span>
                           {app.invoiceNumber && (
-                            <p style={{ fontSize: "10px", color: "#9ca3af", marginTop: "3px", textAlign: "center" }}>{app.invoiceNumber}</p>
+                            <button
+                              onClick={() => setInvoiceTarget(app)}
+                              style={{ fontSize: "10px", color: "#2563eb", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline", display: "flex", alignItems: "center", gap: "3px" }}
+                            >
+                              <FileDown size={10} /> {app.invoiceNumber}
+                            </button>
                           )}
                         </div>
 
@@ -552,7 +601,21 @@ export default function AdminPage() {
                           <DetailRow label="브랜드명" value={app.brandName} />
                           <DetailRow label="담당자" value={app.contactName} />
                           <DetailRow label="연락처" value={app.contactPhone} />
-                          <DetailRow label="이메일" value={app.contactEmail} />
+                          <div>
+                            <p style={{ fontSize: "10px", color: "#9ca3af", fontWeight: "600", marginBottom: "2px" }}>이메일</p>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <a href={`mailto:${app.contactEmail}`} style={{ fontSize: "12px", color: "#2563eb", textDecoration: "none" }}>
+                                {app.contactEmail}
+                              </a>
+                              <button
+                                onClick={() => handleCopyEmail(app.contactEmail)}
+                                title="이메일 복사"
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: copiedEmail === app.contactEmail ? "#16a34a" : "#9ca3af", display: "flex", alignItems: "center", transition: "color 0.15s" }}
+                              >
+                                {copiedEmail === app.contactEmail ? <Check size={12} /> : <Copy size={12} />}
+                              </button>
+                            </div>
+                          </div>
                           <DetailRow label="제품명" value={app.productName} />
                           {app.productUrl && (
                             <div style={{ gridColumn: "1 / -1" }}>
@@ -645,7 +708,8 @@ export default function AdminPage() {
                       {camp.slots.map((slot) => (
                         <div
                           key={slot.number}
-                          title={slot.brandName ?? (slot.status === "available" ? "빈 슬롯" : slot.status)}
+                          title={`슬롯 #${slot.number} 편집`}
+                          onClick={() => setSlotEditTarget({ campaignId: camp.id, campaignTitle: camp.contentTitle, slot })}
                           style={{
                             width: "28px", height: "28px", borderRadius: "6px",
                             backgroundColor:
@@ -658,7 +722,11 @@ export default function AdminPage() {
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: "10px", fontWeight: "700",
                             color: slot.status === "available" ? "#16a34a" : slot.status === "reserved" ? "#d97706" : "#9ca3af",
+                            cursor: "pointer",
+                            transition: "transform 0.1s, box-shadow 0.1s",
                           }}
+                          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.15)"; e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.12)"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "none"; }}
                         >
                           {slot.number}
                         </div>
@@ -762,6 +830,44 @@ export default function AdminPage() {
         </>)}
       </div>
 
+      {/* Invoice Modal (admin view) */}
+      {invoiceTarget && (
+        <InvoiceModal
+          application={{
+            id: invoiceTarget.id,
+            campaignId: invoiceTarget.campaignId,
+            slotId: invoiceTarget.slotNumber,
+            status: invoiceTarget.status,
+            appliedAt: invoiceTarget.appliedAt,
+            companyName: invoiceTarget.companyName,
+            brandName: invoiceTarget.brandName,
+            productName: invoiceTarget.productName,
+            invoiceNumber: invoiceTarget.invoiceNumber,
+            invoiceIssuedAt: invoiceTarget.invoiceIssuedAt,
+            paymentDueDate: invoiceTarget.paymentDueDate,
+            expectedPaymentDate: invoiceTarget.expectedPaymentDate,
+          }}
+          campaign={{
+            id: invoiceTarget.campaignId,
+            contentTitle: invoiceTarget.campaignTitle,
+            perSlotCost: invoiceTarget.perSlotCost,
+            influencer: {
+              name: invoiceTarget.influencerName,
+              handle: "",
+              platform: invoiceTarget.influencerPlatform as "youtube" | "instagram" | "tiktok" | "xiaohongshu",
+              followers: "",
+              category: "",
+              thumbnailUrl: invoiceTarget.influencerThumbnail,
+              profileUrl: "",
+            },
+            contentType: "", recruitDeadline: "", shootingDate: "", publishDate: "",
+            totalSlots: 0, slots: [], totalCost: 0, contentGuide: [], restrictions: [],
+            status: "open", country: "us",
+          }}
+          onClose={() => setInvoiceTarget(null)}
+        />
+      )}
+
       {/* Campaign Form Modal */}
       {campaignModal.open && (
         <CampaignFormModal
@@ -769,6 +875,18 @@ export default function AdminPage() {
           existing={campaignModal.target}
           onClose={() => setCampaignModal({ open: false, mode: "create" })}
           onSaved={loadData}
+        />
+      )}
+
+      {/* Slot Edit Modal */}
+      {slotEditTarget && (
+        <SlotEditModal
+          campaignTitle={slotEditTarget.campaignTitle}
+          slot={slotEditTarget.slot}
+          onClose={() => setSlotEditTarget(null)}
+          onSave={(newStatus, newBrandName) =>
+            handleSaveSlot(slotEditTarget.campaignId, slotEditTarget.slot.number, newStatus, newBrandName)
+          }
         />
       )}
     </div>
@@ -802,6 +920,118 @@ function DetailRow({ label, value }: { label: string; value?: string }) {
     <div>
       <p style={{ fontSize: "10px", color: "#9ca3af", fontWeight: "600", marginBottom: "2px" }}>{label}</p>
       <p style={{ fontSize: "12px", color: "#374151", lineHeight: "1.5" }}>{value}</p>
+    </div>
+  );
+}
+
+function SlotEditModal({ campaignTitle, slot, onClose, onSave }: {
+  campaignTitle: string;
+  slot: { number: number; status: string; brandName?: string };
+  onClose: () => void;
+  onSave: (status: string, brandName: string) => Promise<void>;
+}) {
+  const [status, setStatus] = useState(slot.status);
+  const [brandName, setBrandName] = useState(slot.brandName ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const STATUS_OPTIONS = [
+    { value: "available", label: "빈 슬롯 (available)", color: "#16a34a", bg: "#f0fdf4", border: "#86efac" },
+    { value: "reserved",  label: "예약 중 (reserved)",  color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
+    { value: "filled",    label: "확정 (filled)",        color: "#6b7280", bg: "#f3f4f6", border: "#d1d5db" },
+  ];
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    await onSave(status, brandName);
+    setSaving(false);
+  };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ backgroundColor: "#fff", borderRadius: "16px", padding: "28px", width: "380px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ fontSize: "11px", color: "#9ca3af", marginBottom: "4px" }}>{campaignTitle}</p>
+          <h3 style={{ fontSize: "18px", fontWeight: "900", color: "#111", letterSpacing: "-0.03em" }}>
+            슬롯 #{slot.number} 관리
+          </h3>
+        </div>
+
+        {/* Status select */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "600", color: "#6b7280", marginBottom: "8px" }}>슬롯 상태</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {STATUS_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                style={{
+                  display: "flex", alignItems: "center", gap: "10px",
+                  padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                  border: `1.5px solid ${status === opt.value ? opt.border : "#e5e7eb"}`,
+                  backgroundColor: status === opt.value ? opt.bg : "#fff",
+                  transition: "all 0.15s",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="slotStatus"
+                  value={opt.value}
+                  checked={status === opt.value}
+                  onChange={() => setStatus(opt.value)}
+                  style={{ accentColor: opt.color }}
+                />
+                <span style={{ fontSize: "13px", fontWeight: status === opt.value ? "700" : "400", color: status === opt.value ? opt.color : "#374151" }}>
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Brand name input */}
+        {status !== "available" && (
+          <div style={{ marginBottom: "20px" }}>
+            <p style={{ fontSize: "11px", fontWeight: "600", color: "#6b7280", marginBottom: "6px" }}>브랜드명</p>
+            <input
+              type="text"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+              placeholder="브랜드명 입력"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "10px 12px", border: "1px solid #e5e7eb",
+                borderRadius: "8px", fontSize: "13px", color: "#111",
+                outline: "none", fontFamily: "inherit", transition: "border-color 0.15s",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#9ca3af")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")}
+            />
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={onClose}
+            style={{ flex: 1, padding: "10px", backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#6b7280", fontSize: "13px", cursor: "pointer" }}
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            style={{ flex: 2, padding: "10px", backgroundColor: saving ? "#e5e7eb" : "#111", border: "none", borderRadius: "8px", color: saving ? "#9ca3af" : "#fff", fontSize: "13px", fontWeight: "700", cursor: saving ? "default" : "pointer" }}
+          >
+            {saving ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

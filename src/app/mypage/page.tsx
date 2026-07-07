@@ -191,13 +191,19 @@ export default function MyPage() {
   const handleSave = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("users").update({
+      const { error } = await supabase.from("users").upsert({
+        id: user.id,
+        email: user.email ?? "",
         company_name: draft.companyName,
         brand_name: draft.brandName,
         contact_name: draft.contactName,
         phone: draft.phone,
         business_number: draft.businessNumber,
-      }).eq("id", user.id);
+      }, { onConflict: "id" });
+      if (error) {
+        alert("저장 실패: " + error.message);
+        return;
+      }
     }
     setProfile({ ...draft });
     setIsEditing(false);
@@ -212,17 +218,25 @@ export default function MyPage() {
     const date = paymentDates[app.id] || app.expectedPaymentDate;
     if (!date) return;
 
-    // invoices 테이블의 expected_payment_date 업데이트
-    await supabase
+    const { error: invErr } = await supabase
       .from("invoices")
       .update({ expected_payment_date: date, status: "payment_confirming" })
       .eq("application_id", app.id);
 
-    // applications 상태 업데이트
-    await supabase
+    if (invErr) {
+      alert("처리 중 오류가 발생했습니다: " + invErr.message);
+      return;
+    }
+
+    const { error: appErr } = await supabase
       .from("applications")
       .update({ status: "payment_confirming" })
       .eq("id", app.id);
+
+    if (appErr) {
+      alert("처리 중 오류가 발생했습니다: " + appErr.message);
+      return;
+    }
 
     updateApp(app.id, { status: "payment_confirming", expectedPaymentDate: date });
   };
@@ -241,7 +255,7 @@ export default function MyPage() {
           onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#374151"; }}
           onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#6b7280"; }}
         >
-          My Dashboard
+          ← 캠페인 목록
         </button>
         <button
           onClick={handleLogout}
@@ -399,66 +413,75 @@ export default function MyPage() {
                             </span>
                           </div>
 
-                          {/* Invoice button — prominent */}
-                          <button
-                            onClick={() => setInvoiceTarget(app)}
-                            style={{
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "8px",
-                              padding: "13px 20px",
-                              backgroundColor: "#fff",
-                              border: "1.5px solid #93c5fd",
-                              borderRadius: "10px",
-                              color: "#1d4ed8",
-                              fontSize: "14px",
-                              fontWeight: "700",
-                              cursor: "pointer",
-                              transition: "all 0.15s",
-                              letterSpacing: "-0.01em",
-                            }}
-                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#eff6ff"; e.currentTarget.style.borderColor = "#3b82f6"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#fff"; e.currentTarget.style.borderColor = "#93c5fd"; }}
-                          >
-                            <FileDown size={16} />
-                            인보이스 확인하기
-                          </button>
+                          {app.invoiceNumber ? (
+                            <>
+                              {/* Invoice button — prominent */}
+                              <button
+                                onClick={() => setInvoiceTarget(app)}
+                                style={{
+                                  width: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "8px",
+                                  padding: "13px 20px",
+                                  backgroundColor: "#fff",
+                                  border: "1.5px solid #93c5fd",
+                                  borderRadius: "10px",
+                                  color: "#1d4ed8",
+                                  fontSize: "14px",
+                                  fontWeight: "700",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s",
+                                  letterSpacing: "-0.01em",
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#eff6ff"; e.currentTarget.style.borderColor = "#3b82f6"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#fff"; e.currentTarget.style.borderColor = "#93c5fd"; }}
+                              >
+                                <FileDown size={16} />
+                                인보이스 확인하기 ({app.invoiceNumber})
+                              </button>
 
-                          {/* Payment date + submit */}
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                            <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151", flexShrink: 0 }}>입금날짜:</span>
-                            <input
-                              type="date"
-                              value={paymentDates[app.id] ?? (app.expectedPaymentDate || "")}
-                              onChange={(e) => setPaymentDates({ ...paymentDates, [app.id]: e.target.value })}
-                              min={new Date().toISOString().split("T")[0]}
-                              style={{ flex: 1, minWidth: "140px", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "13px", color: "#374151", outline: "none", fontFamily: "inherit", backgroundColor: "#fff" }}
-                            />
-                            <button
-                              onClick={() => handlePaymentDone(app)}
-                              disabled={!canSubmitPayment}
-                              style={{
-                                padding: "8px 20px",
-                                backgroundColor: canSubmitPayment ? "#111" : "#e5e7eb",
-                                border: "none",
-                                borderRadius: "8px",
-                                color: canSubmitPayment ? "#fff" : "#9ca3af",
-                                fontSize: "13px",
-                                fontWeight: "700",
-                                cursor: canSubmitPayment ? "pointer" : "default",
-                                transition: "background-color 0.15s",
-                                flexShrink: 0,
-                              }}
-                              onMouseEnter={(e) => { if (canSubmitPayment) e.currentTarget.style.backgroundColor = "#374151"; }}
-                              onMouseLeave={(e) => { if (canSubmitPayment) e.currentTarget.style.backgroundColor = "#111"; }}
-                            >
-                              입금 완료
-                            </button>
-                          </div>
-                          {app.paymentDueDate && (
-                            <p style={{ fontSize: "11px", color: "#64748b" }}>납부 기한: <strong style={{ color: "#dc2626" }}>{app.paymentDueDate}</strong></p>
+                              {/* Payment date + submit */}
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                                <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151", flexShrink: 0 }}>입금날짜:</span>
+                                <input
+                                  type="date"
+                                  value={paymentDates[app.id] ?? (app.expectedPaymentDate || "")}
+                                  onChange={(e) => setPaymentDates({ ...paymentDates, [app.id]: e.target.value })}
+                                  min={new Date().toISOString().split("T")[0]}
+                                  style={{ flex: 1, minWidth: "140px", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "13px", color: "#374151", outline: "none", fontFamily: "inherit", backgroundColor: "#fff" }}
+                                />
+                                <button
+                                  onClick={() => handlePaymentDone(app)}
+                                  disabled={!canSubmitPayment}
+                                  style={{
+                                    padding: "8px 20px",
+                                    backgroundColor: canSubmitPayment ? "#111" : "#e5e7eb",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    color: canSubmitPayment ? "#fff" : "#9ca3af",
+                                    fontSize: "13px",
+                                    fontWeight: "700",
+                                    cursor: canSubmitPayment ? "pointer" : "default",
+                                    transition: "background-color 0.15s",
+                                    flexShrink: 0,
+                                  }}
+                                  onMouseEnter={(e) => { if (canSubmitPayment) e.currentTarget.style.backgroundColor = "#374151"; }}
+                                  onMouseLeave={(e) => { if (canSubmitPayment) e.currentTarget.style.backgroundColor = "#111"; }}
+                                >
+                                  입금 완료
+                                </button>
+                              </div>
+                              {app.paymentDueDate && (
+                                <p style={{ fontSize: "11px", color: "#64748b" }}>납부 기한: <strong style={{ color: "#dc2626" }}>{app.paymentDueDate}</strong></p>
+                              )}
+                            </>
+                          ) : (
+                            <div style={{ padding: "12px 16px", backgroundColor: "#fff", border: "1px dashed #bfdbfe", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                              <Clock size={13} color="#93c5fd" />
+                              <span style={{ fontSize: "13px", color: "#6b7280" }}>인보이스 발행 준비 중입니다. 잠시 후 다시 확인해 주세요.</span>
+                            </div>
                           )}
                         </div>
                       )}
@@ -526,12 +549,13 @@ function ProfileField({ icon, label, value, editing, onChange }: { icon: React.R
       </div>
       {editing ? (
         <input value={value} onChange={(e) => onChange(e.target.value)}
+          placeholder={label + " 입력"}
           style={{ width: "100%", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px", color: "#111", padding: "7px 10px", fontSize: "13px", outline: "none", fontFamily: "inherit", transition: "border-color 0.15s" }}
           onFocus={(e) => (e.currentTarget.style.borderColor = "#9ca3af")}
           onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")}
         />
       ) : (
-        <p style={{ fontSize: "13px", color: "#374151", fontWeight: "500", paddingLeft: "2px" }}>{value}</p>
+        <p style={{ fontSize: "13px", color: value ? "#374151" : "#d1d5db", fontWeight: "500", paddingLeft: "2px" }}>{value || "미입력"}</p>
       )}
     </div>
   );

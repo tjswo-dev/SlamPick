@@ -35,6 +35,7 @@ interface FormState {
   infHandle: string;
   infPlatform: "youtube" | "instagram" | "tiktok" | "xiaohongshu";
   infFollowers: string;
+  infLikesSaves: string;
   infCategory: string;
   infProfileUrl: string;
   infThumbnailUrl: string;
@@ -62,7 +63,7 @@ function initForm(mode: "create" | "edit", existing?: CampaignEditData): FormSta
     const n = existing.totalSlots;
     const paddedGuides = [...guides, ...Array(Math.max(0, n - guides.length)).fill("")].slice(0, n);
     return {
-      infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "",
+      infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "", infLikesSaves: "",
       infCategory: "", infProfileUrl: "", infThumbnailUrl: "",
       contentTitle: existing.contentTitle,
       contentType: existing.contentType,
@@ -80,7 +81,7 @@ function initForm(mode: "create" | "edit", existing?: CampaignEditData): FormSta
     };
   }
   return {
-    infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "",
+    infName: "", infHandle: "", infPlatform: "youtube", infFollowers: "", infLikesSaves: "",
     infCategory: "", infProfileUrl: "", infThumbnailUrl: "",
     contentTitle: "", contentType: "", recruitDeadline: "",
     shootingDate: "", publishDate: "",
@@ -171,6 +172,7 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
           handle: form.infHandle,
           platform: form.infPlatform,
           followers: form.infFollowers,
+          likes_saves: form.infPlatform === "xiaohongshu" ? (form.infLikesSaves || null) : null,
           category: form.infCategory || null,
           profile_url: form.infProfileUrl || null,
           thumbnail_url: form.infThumbnailUrl,
@@ -254,6 +256,11 @@ export default function CampaignFormModal({ mode, existing, onClose, onSaved }: 
                   <Field label="팔로워">
                     <input style={inputStyle} value={form.infFollowers} onChange={(e) => set("infFollowers", e.target.value)} placeholder="ex. 182만" />
                   </Field>
+                  {form.infPlatform === "xiaohongshu" && (
+                    <Field label="좋아요·저장">
+                      <input style={inputStyle} value={form.infLikesSaves} onChange={(e) => set("infLikesSaves", e.target.value)} placeholder="ex. 230만" />
+                    </Field>
+                  )}
                   <Field label="카테고리">
                     <input style={inputStyle} value={form.infCategory} onChange={(e) => set("infCategory", e.target.value)} placeholder="ex. 라이프스타일 / 건강" />
                   </Field>

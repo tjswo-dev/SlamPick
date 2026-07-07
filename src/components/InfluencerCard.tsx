@@ -159,6 +159,15 @@ export default function InfluencerCard({
             {influencer.followers}
           </span>
           <span style={{ fontSize: "14px", color: "#9ca3af" }}>팔로워</span>
+          {influencer.platform === "xiaohongshu" && influencer.likesAndSaves && (
+            <>
+              <span style={{ fontSize: "14px", color: "#e5e7eb" }}>·</span>
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "#ff2442" }}>
+                {influencer.likesAndSaves}
+              </span>
+              <span style={{ fontSize: "12px", color: "#9ca3af" }}>좋아요·저장</span>
+            </>
+          )}
         </div>
 
         {/* Platform tag */}
