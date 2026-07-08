@@ -19,6 +19,13 @@ export default function Dashboard() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
   const [dbError, setDbError] = useState<string>("");
+  const [userPrefill, setUserPrefill] = useState<{
+    companyName?: string;
+    brandName?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+  }>({});
 
   useEffect(() => {
     fetchCampaigns().then((data) => {
@@ -27,6 +34,20 @@ export default function Dashboard() {
     }).catch((e) => {
       setDbError(String(e));
       setDbLoading(false);
+    });
+
+    // 유저 프로필 로드 (슬롯 신청 폼 자동완성용)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("users").select("company_name,brand_name,contact_name,email,phone").eq("id", user.id).single().then(({ data }) => {
+        if (data) setUserPrefill({
+          companyName: data.company_name || "",
+          brandName: data.brand_name || "",
+          contactName: data.contact_name || "",
+          contactEmail: data.email || user.email || "",
+          contactPhone: data.phone || "",
+        });
+      });
     });
   }, []);
 
@@ -399,6 +420,7 @@ export default function Dashboard() {
           slotId={selectedSlot.slotId}
           onClose={() => setSelectedSlot(null)}
           onSubmit={handleApplication}
+          prefill={userPrefill}
         />
       )}
     </div>

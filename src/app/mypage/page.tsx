@@ -32,6 +32,19 @@ const FILTER_TABS: { key: AppFilter; label: string }[] = [
   { key: "completed",        label: "완료" },
 ];
 
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.startsWith("02")) {
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `${d.slice(0, 2)}-${d.slice(2)}`;
+    if (d.length <= 9) return `${d.slice(0, 2)}-${d.slice(2, 5)}-${d.slice(5)}`;
+    return `${d.slice(0, 2)}-${d.slice(2, 6)}-${d.slice(6)}`;
+  }
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
+
 export default function MyPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -310,7 +323,7 @@ export default function MyPage() {
                 <ProfileField icon={<Tag size={13} />}       label="브랜드명"  value={isEditing ? draft.brandName      : profile.brandName}      editing={isEditing} onChange={(v) => setDraft({ ...draft, brandName: v })} />
                 <ProfileField icon={<User size={13} />}      label="담당자명"  value={isEditing ? draft.contactName    : profile.contactName}    editing={isEditing} onChange={(v) => setDraft({ ...draft, contactName: v })} />
                 <ProfileField icon={<Mail size={13} />}      label="이메일"    value={isEditing ? draft.email          : profile.email}          editing={isEditing} onChange={(v) => setDraft({ ...draft, email: v })} />
-                <ProfileField icon={<Phone size={13} />}     label="전화번호"  value={isEditing ? draft.phone          : profile.phone}          editing={isEditing} onChange={(v) => setDraft({ ...draft, phone: v })} />
+                <ProfileField icon={<Phone size={13} />}     label="전화번호"  value={isEditing ? draft.phone          : profile.phone}          editing={isEditing} onChange={(v) => setDraft({ ...draft, phone: formatPhone(v) })} />
                 <ProfileField icon={<FileText size={13} />}  label="사업자번호" value={isEditing ? draft.businessNumber : profile.businessNumber} editing={isEditing} onChange={(v) => setDraft({ ...draft, businessNumber: v })} />
               </div>
             </div>

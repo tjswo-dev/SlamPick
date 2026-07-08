@@ -4,30 +4,50 @@ import { useState } from "react";
 import { X, CheckCircle, AlertCircle, Users, Calendar, Tag } from "lucide-react";
 import { Campaign, BrandApplication } from "@/lib/types";
 
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.startsWith("02")) {
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `${d.slice(0, 2)}-${d.slice(2)}`;
+    if (d.length <= 9) return `${d.slice(0, 2)}-${d.slice(2, 5)}-${d.slice(5)}`;
+    return `${d.slice(0, 2)}-${d.slice(2, 6)}-${d.slice(6)}`;
+  }
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
+
 interface SlotModalProps {
   campaign: Campaign;
   slotId: number;
   onClose: () => void;
   onSubmit: (application: BrandApplication) => Promise<{ ok: boolean; error?: string }>;
+  prefill?: {
+    companyName?: string;
+    brandName?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+  };
 }
 
-export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotModalProps) {
+export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill }: SlotModalProps) {
   const [step, setStep] = useState<"guide" | "form" | "success">("guide");
   const [reserveAll, setReserveAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
-    companyName: "",
-    brandName: "",
+    companyName: prefill?.companyName ?? "",
+    brandName: prefill?.brandName ?? "",
     productName: "",
     productUrl: "",
     productDescription: "",
     exposurePoint: "",
     referenceVideoUrl: "",
     precautions: "",
-    contactName: "",
-    contactEmail: "",
-    contactPhone: "",
+    contactName: prefill?.contactName ?? "",
+    contactEmail: prefill?.contactEmail ?? "",
+    contactPhone: prefill?.contactPhone ?? "",
   });
 
   const availableSlots = campaign.slots.filter((s) => s.status === "available");
@@ -299,6 +319,14 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
               </p>
             )}
 
+            {(prefill?.companyName || prefill?.contactName) && (
+              <div style={{ marginBottom: "16px", padding: "9px 13px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px" }}>
+                <p style={{ fontSize: "12px", color: "#16a34a", fontWeight: "600" }}>
+                  ✓ My Dashboard 프로필에서 정보를 불러왔습니다. 수정 가능합니다.
+                </p>
+              </div>
+            )}
+
             <FormGroup label="회사명 *">
               <FormInput
                 placeholder="(주)브랜드코리아"
@@ -395,7 +423,7 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit }: SlotM
               <FormInput
                 placeholder="010-0000-0000"
                 value={form.contactPhone}
-                onChange={(v) => setForm({ ...form, contactPhone: v })}
+                onChange={(v) => setForm({ ...form, contactPhone: formatPhone(v) })}
                 required
               />
             </FormGroup>
