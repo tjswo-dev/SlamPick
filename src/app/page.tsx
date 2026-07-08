@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
-import { X } from "lucide-react";
 
 interface ServiceTier {
   level: string;
@@ -136,7 +135,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,6 +178,10 @@ export default function LoginPage() {
         @keyframes fadeIn {
           from { opacity: 0; }
           to   { opacity: 1; }
+        }
+        @keyframes expandDown {
+          from { opacity: 0; transform: translateY(-14px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         ::placeholder { color: rgba(255,255,255,0.25); }
         * { box-sizing: border-box; }
@@ -404,19 +407,189 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Cards */}
-        <div
-          style={{
-            maxWidth: "1000px",
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
-            gap: "20px",
-          }}
-        >
-          {SERVICES.map((service) => (
-            <ServiceCard key={service.id} service={service} onClick={() => setSelectedService(service)} />
-          ))}
+        {/* Expanding panels */}
+        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+          {/* Panel row */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            {SERVICES.map((service) => {
+              const isActive = activeId === service.id;
+              const hasActive = activeId !== null;
+              return (
+                <div
+                  key={service.id}
+                  onClick={() => setActiveId(isActive ? null : service.id)}
+                  style={{
+                    flex: isActive && hasActive ? 2.2 : 1,
+                    height: hasActive ? "88px" : "500px",
+                    backgroundColor: "#111",
+                    borderRadius: hasActive && isActive ? "18px 18px 0 0" : "18px",
+                    cursor: "pointer",
+                    transition: "flex 0.48s cubic-bezier(0.4, 0, 0.2, 1), height 0.48s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.35s ease, background-color 0.2s",
+                    padding: hasActive ? "0 24px" : "44px 32px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: hasActive ? "center" : "flex-end",
+                    overflow: "hidden",
+                    position: "relative",
+                    outline: isActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+                    outlineOffset: "-1px",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLDivElement).style.backgroundColor = "#1a1a1a";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLDivElement).style.backgroundColor = "#111";
+                  }}
+                >
+                  <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: "radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+                  <span style={{ fontSize: "10px", fontWeight: "700", color: isActive ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)", letterSpacing: "0.18em", marginBottom: hasActive ? "4px" : "18px", transition: "color 0.2s", flexShrink: 0 }}>
+                    {service.tag}
+                  </span>
+                  <h3 style={{
+                    fontSize: hasActive ? "15px" : "26px",
+                    fontWeight: "800",
+                    color: "#fff",
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.2,
+                    transition: "font-size 0.3s ease",
+                    whiteSpace: hasActive ? "nowrap" : "normal",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    flexShrink: 0,
+                  }}>
+                    {service.title}
+                  </h3>
+
+                  {!hasActive && (
+                    <>
+                      <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", marginTop: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                        {service.titleEn}
+                      </p>
+                      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.48)", lineHeight: 1.75, marginTop: "22px" }}>
+                        {service.summary}
+                      </p>
+                      <div style={{ marginTop: "auto", paddingTop: "26px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>자세히 보기</span>
+                        <span style={{ color: "rgba(255,255,255,0.28)", fontSize: "16px" }}>→</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Expanded detail */}
+          {activeId && (() => {
+            const svc = SERVICES.find(s => s.id === activeId)!;
+            return (
+              <div
+                style={{
+                  backgroundColor: "#0d0d0d",
+                  borderRadius: "0 0 24px 24px",
+                  padding: "64px 72px 72px",
+                  animation: "expandDown 0.42s cubic-bezier(0.4, 0, 0.2, 1)",
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                {/* Header */}
+                <div style={{ marginBottom: "52px" }}>
+                  <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
+                    {svc.tag} · {svc.titleEn}
+                  </p>
+                  <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                    {svc.title}
+                  </h2>
+                </div>
+
+                {/* Description */}
+                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px" }}>
+                  {svc.detail.description}
+                </p>
+
+                {/* Key points */}
+                {svc.detail.points.length > 0 && (
+                  <div style={{ marginBottom: "56px" }}>
+                    <SectionLabel dark>주요 특징</SectionLabel>
+                    <div style={{ display: "flex", gap: "12px", marginTop: "20px", flexWrap: "wrap" }}>
+                      {svc.detail.points.map((pt, i) => (
+                        <div key={i} style={{ flex: "1 1 160px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "14px", padding: "22px 24px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                          <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.32)", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "9px" }}>{pt.label}</p>
+                          <p style={{ fontSize: "15px", color: "#fff", fontWeight: "700" }}>{pt.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tiers */}
+                {svc.detail.tiers && svc.detail.tiers.length > 0 && (
+                  <div style={{ marginBottom: "56px" }}>
+                    <SectionLabel dark>규모별 운영 전략</SectionLabel>
+                    <div style={{ display: "flex", gap: "14px", marginTop: "20px" }}>
+                      {svc.detail.tiers.map((tier, i) => (
+                        <div key={i} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
+                          <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "10px" }}>
+                            <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.13)", color: "#fff", padding: "3px 12px", borderRadius: "20px", letterSpacing: "0.1em", flexShrink: 0 }}>
+                              {tier.badge}
+                            </span>
+                            <span style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>{tier.level}</span>
+                          </div>
+                          <div style={{ padding: "20px 22px" }}>
+                            <ul style={{ margin: "0 0 16px", paddingLeft: "18px" }}>
+                              {tier.features.map((f, j) => (
+                                <li key={j} style={{ fontSize: "13px", color: "rgba(255,255,255,0.58)", lineHeight: 1.8 }}>{f}</li>
+                              ))}
+                            </ul>
+                            <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid rgba(255,255,255,0.25)" }}>
+                              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.7 }}>
+                                <strong style={{ color: "rgba(255,255,255,0.72)" }}>기대 효과 — </strong>{tier.effect}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Video */}
+                <div style={{ marginBottom: "56px" }}>
+                  <SectionLabel dark>레퍼런스 영상</SectionLabel>
+                  <div style={{ marginTop: "20px" }}>
+                    {svc.detail.videoUrl ? (
+                      <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
+                        <iframe
+                          src={svc.detail.videoUrl}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div style={{ height: "260px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+                        <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: "20px", marginLeft: "3px" }}>▶</span>
+                        </div>
+                        <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.28)", fontWeight: "500" }}>레퍼런스 영상이 곧 추가됩니다</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expected outcome */}
+                <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
+                    Expected Outcome
+                  </p>
+                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.88, fontWeight: "500" }}>
+                    {svc.detail.effect}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 
@@ -434,207 +607,13 @@ export default function LoginPage() {
         </p>
       </footer>
 
-      {/* Service detail modal */}
-      {selectedService && (
-        <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
-      )}
     </>
   );
 }
 
-function ServiceCard({ service, onClick }: { service: ServiceData; onClick: () => void }) {
+function SectionLabel({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <div
-      onClick={onClick}
-      style={{
-        backgroundColor: "#111",
-        borderRadius: "22px",
-        padding: "52px 44px 44px",
-        cursor: "pointer",
-        transition: "transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease",
-        position: "relative",
-        overflow: "hidden",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-8px)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 32px 80px rgba(0,0,0,0.22)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
-      }}
-    >
-      {/* Subtle radial accent */}
-      <div style={{ position: "absolute", top: 0, right: 0, width: "260px", height: "260px", background: "radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, transparent 65%)", pointerEvents: "none" }} />
-
-      <div style={{ marginBottom: "44px" }}>
-        <span style={{ fontSize: "11px", fontWeight: "700", color: "rgba(255,255,255,0.2)", letterSpacing: "0.18em" }}>
-          {service.tag}
-        </span>
-      </div>
-
-      <h3 style={{ fontSize: "30px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", marginBottom: "10px", lineHeight: 1.2 }}>
-        {service.title}
-      </h3>
-      <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", fontWeight: "600", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "22px" }}>
-        {service.titleEn}
-      </p>
-      <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", lineHeight: 1.75, marginBottom: "44px" }}>
-        {service.summary}
-      </p>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "24px" }}>
-        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", fontWeight: "600", letterSpacing: "0.06em" }}>자세히 살펴보기</span>
-        <span style={{ fontSize: "20px", color: "rgba(255,255,255,0.3)" }}>→</span>
-      </div>
-    </div>
-  );
-}
-
-function ServiceModal({ service, onClose }: { service: ServiceData; onClose: () => void }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0,0,0,0.88)",
-        zIndex: 2000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        animation: "fadeIn 0.25s ease",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: "24px",
-          width: "100%",
-          maxWidth: "780px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          boxShadow: "0 48px 140px rgba(0,0,0,0.5)",
-          animation: "modalIn 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)",
-        }}
-      >
-        {/* Modal header */}
-        <div style={{ padding: "36px 40px 28px", borderBottom: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "sticky", top: 0, backgroundColor: "#fff", zIndex: 1, borderRadius: "24px 24px 0 0" }}>
-          <div>
-            <p style={{ fontSize: "10px", color: "#bbb", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>
-              {service.tag} · {service.titleEn}
-            </p>
-            <h2 style={{ fontSize: "28px", fontWeight: "900", color: "#111", letterSpacing: "-0.03em" }}>
-              {service.title}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: "10px", padding: "9px", cursor: "pointer", color: "#9ca3af", display: "flex", transition: "all 0.15s", flexShrink: 0, marginLeft: "24px" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f3f4f6"; e.currentTarget.style.color = "#374151"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#9ca3af"; }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div style={{ padding: "36px 40px 40px", display: "flex", flexDirection: "column", gap: "36px" }}>
-          {/* Description */}
-          <p style={{ fontSize: "15px", color: "#374151", lineHeight: 1.85 }}>
-            {service.detail.description}
-          </p>
-
-          {/* Key points */}
-          {service.detail.points.length > 0 && (
-            <div>
-              <SectionLabel>주요 특징</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "10px", marginTop: "14px" }}>
-                {service.detail.points.map((pt, i) => (
-                  <div key={i} style={{ backgroundColor: "#f8f9fb", borderRadius: "12px", padding: "18px 20px" }}>
-                    <p style={{ fontSize: "10px", color: "#aaa", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "7px" }}>{pt.label}</p>
-                    <p style={{ fontSize: "14px", color: "#111", fontWeight: "700" }}>{pt.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Video */}
-          <div>
-            <SectionLabel>레퍼런스 영상</SectionLabel>
-            <div style={{ marginTop: "14px" }}>
-              {service.detail.videoUrl ? (
-                <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: "14px", overflow: "hidden", backgroundColor: "#000" }}>
-                  <iframe
-                    src={service.detail.videoUrl}
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              ) : (
-                <div style={{ height: "240px", backgroundColor: "#f3f4f6", borderRadius: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", border: "2px dashed #e5e7eb" }}>
-                  <div style={{ width: "52px", height: "52px", borderRadius: "50%", backgroundColor: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: "20px", marginLeft: "3px" }}>▶</span>
-                  </div>
-                  <p style={{ fontSize: "13px", color: "#aaa", fontWeight: "500" }}>레퍼런스 영상이 곧 추가됩니다</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Tiers */}
-          {service.detail.tiers && service.detail.tiers.length > 0 && (
-            <div>
-              <SectionLabel>규모별 운영 전략</SectionLabel>
-              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                {service.detail.tiers.map((tier, i) => (
-                  <div key={i} style={{ border: "1px solid #e5e7eb", borderRadius: "14px", overflow: "hidden" }}>
-                    <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "#111", color: "#fff", padding: "3px 11px", borderRadius: "20px", letterSpacing: "0.1em" }}>
-                        {tier.badge}
-                      </span>
-                      <span style={{ fontSize: "16px", fontWeight: "800", color: "#111" }}>{tier.level}</span>
-                    </div>
-                    <div style={{ padding: "18px 22px" }}>
-                      <ul style={{ margin: "0 0 14px", paddingLeft: "18px" }}>
-                        {tier.features.map((f, j) => (
-                          <li key={j} style={{ fontSize: "13px", color: "#374151", lineHeight: 1.75 }}>{f}</li>
-                        ))}
-                      </ul>
-                      <div style={{ backgroundColor: "#f8f9fb", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid #111" }}>
-                        <p style={{ fontSize: "12px", color: "#6b7280", lineHeight: 1.65 }}>
-                          <strong style={{ color: "#374151" }}>기대 효과 — </strong>{tier.effect}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Expected outcome */}
-          <div style={{ backgroundColor: "#111", borderRadius: "18px", padding: "28px 32px" }}>
-            <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", fontWeight: "700", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "12px" }}>
-              Expected Outcome
-            </p>
-            <p style={{ fontSize: "15px", color: "#fff", lineHeight: 1.8, fontWeight: "500" }}>
-              {service.detail.effect}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize: "10px", color: "#aaa", fontWeight: "700", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+    <p style={{ fontSize: "10px", color: dark ? "rgba(255,255,255,0.35)" : "#aaa", fontWeight: "700", letterSpacing: "0.18em", textTransform: "uppercase" }}>
       {children}
     </p>
   );
