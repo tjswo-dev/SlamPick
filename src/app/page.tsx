@@ -180,8 +180,8 @@ const SERVICES: ServiceData[] = [
   {
     id: "organic",
     tag: "04",
-    title: "오가닉 추천 콘텐츠",
-    titleEn: "Organic Curation Content",
+    title: "큐레이션 추천 콘텐츠",
+    titleEn: "Authentic Curation Content",
     summary: "여러 카테고리의 제품을 자연스럽게 큐레이션하여 광고 거부감 없이 소비자의 자발적 구매를 이끌어냅니다.",
     detail: {
       description:
@@ -192,7 +192,7 @@ const SERVICES: ServiceData[] = [
         { label: "콘텐츠 형태", value: "추천 리스트 · 하울 · 일상 브이로그" },
       ],
       effect:
-        "광고에 대한 거부감을 낮추고, 찐 후기처럼 느껴지는 자연스러운(오가닉) 추천을 통해 소비 전환 유도",
+        "광고에 대한 거부감을 낮추고, 찐 후기처럼 느껴지는 자연스러운 큐레이션 추천을 통해 소비 전환 유도",
       videoUrls: [
         "https://www.tiktok.com/embed/v2/7623163424729468190",
         "https://www.instagram.com/reel/DU0WD2Cj-se/embed/",
