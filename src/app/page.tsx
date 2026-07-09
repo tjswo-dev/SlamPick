@@ -671,6 +671,7 @@ export default function LoginPage() {
                                         src={video.url}
                                         style={{ width: "100%", height: "100%", border: "none", display: "block" }}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        scrolling={video.url.includes("tiktok.com") ? "no" : undefined}
                                         allowFullScreen
                                       />
                                     ) : (
@@ -774,6 +775,7 @@ export default function LoginPage() {
                               src={url}
                               style={{ width: vw, height: vh, border: "none", display: "block" }}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              scrolling={url.includes("tiktok.com") ? "no" : undefined}
                               allowFullScreen
                             />
                           </div>
