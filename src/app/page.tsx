@@ -218,6 +218,7 @@ const SERVICES: ServiceData[] = [
         "광고에 대한 거부감을 낮추고, 찐 후기처럼 느껴지는 자연스러운(오가닉) 추천을 통해 소비 전환 유도",
       videoUrls: [
         "https://www.tiktok.com/embed/v2/7623163424729468190",
+        "https://www.instagram.com/reel/DU0WD2Cj-se/embed/",
       ],
     },
   },
