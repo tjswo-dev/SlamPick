@@ -571,12 +571,12 @@ export default function LoginPage() {
                   <SectionLabel dark>레퍼런스 영상</SectionLabel>
                   <div style={{ marginTop: "20px" }}>
                     {svc.detail.videoUrls && svc.detail.videoUrls.length > 0 ? (
-                      <div style={{ display: "flex", gap: "16px" }}>
+                      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
                         {svc.detail.videoUrls.map((url, i) => (
-                          <div key={i} style={{ flex: 1, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
+                          <div key={i} style={{ width: "400px", flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
                             <iframe
                               src={url}
-                              style={{ width: "100%", height: "560px", border: "none", display: "block" }}
+                              style={{ width: "400px", height: "780px", border: "none", display: "block" }}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                             />
