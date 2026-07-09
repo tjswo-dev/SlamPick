@@ -118,17 +118,6 @@ const SERVICES: ServiceData[] = [
             "브랜드의 2차 마케팅 활용 소재로 사용하기에 가장 적합한 고효율 그룹",
           videos: [
             {
-              url: "https://www.instagram.com/reel/DaXZG26NHSh/embed/captioned/",
-              brandTag: "뷰티 / 메이크업",
-              brandName: "C사",
-              challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
-              solution: "밀도 높은 팬층을 보유한 미들 크리에이터로 고품질 콘텐츠 자산 확보",
-              metrics: [
-                { label: "콘텐츠 재활용율", value: "+430%" },
-                { label: "구매 전환율", value: "+250%" },
-              ],
-            },
-            {
               url: "https://www.tiktok.com/embed/v2/7645253106598546708",
               brandTag: "라이프스타일 / 이커머스",
               brandName: "D사",
@@ -137,6 +126,17 @@ const SERVICES: ServiceData[] = [
               metrics: [
                 { label: "팔로워 증가", value: "+320%" },
                 { label: "인게이지먼트율", value: "+180%" },
+              ],
+            },
+            {
+              url: "https://www.instagram.com/reel/DaXZG26NHSh/embed/captioned/",
+              brandTag: "뷰티 / 메이크업",
+              brandName: "C사",
+              challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
+              solution: "밀도 높은 팬층을 보유한 미들 크리에이터로 고품질 콘텐츠 자산 확보",
+              metrics: [
+                { label: "콘텐츠 재활용율", value: "+430%" },
+                { label: "구매 전환율", value: "+250%" },
               ],
             },
           ],
