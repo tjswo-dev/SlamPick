@@ -556,11 +556,11 @@ export default function LoginPage() {
                 >
                   <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: "radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, transparent 65%)", pointerEvents: "none" }} />
 
-                  <span style={{ fontSize: "10px", fontWeight: "700", color: isActive ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)", letterSpacing: "0.18em", marginBottom: hasActive ? "4px" : "18px", transition: "color 0.2s", flexShrink: 0 }}>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: isActive ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.3)", letterSpacing: "0.18em", marginBottom: hasActive ? "4px" : "18px", transition: "color 0.2s", flexShrink: 0 }}>
                     {service.tag}
                   </span>
                   <h3 style={{
-                    fontSize: hasActive ? "15px" : "26px",
+                    fontSize: hasActive ? "15px" : "30px",
                     fontWeight: "800",
                     color: "#fff",
                     letterSpacing: "-0.03em",
@@ -576,15 +576,15 @@ export default function LoginPage() {
 
                   {!hasActive && (
                     <>
-                      <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", marginTop: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", marginTop: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                         {service.titleEn}
                       </p>
-                      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.48)", lineHeight: 1.75, marginTop: "22px" }}>
+                      <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginTop: "22px", wordBreak: "keep-all" }}>
                         {service.summary}
                       </p>
-                      <div style={{ marginTop: "auto", paddingTop: "26px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-                        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>자세히 보기</span>
-                        <span style={{ color: "rgba(255,255,255,0.28)", fontSize: "16px" }}>→</span>
+                      <div style={{ marginTop: "auto", paddingTop: "26px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", letterSpacing: "0.06em" }}>자세히 보기</span>
+                        <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "16px" }}>→</span>
                       </div>
                     </>
                   )}
