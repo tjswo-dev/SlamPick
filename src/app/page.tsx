@@ -660,7 +660,7 @@ export default function LoginPage() {
                               {tier.features.join("  ·  ")}
                             </p>
                             {/* Video cards — [영상] [영상] [설명 1개] */}
-                            <div style={{ display: "flex", gap: "32px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "28px 32px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                            <div style={{ display: "flex", gap: "32px", alignItems: "center", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "28px 32px", border: "1px solid rgba(255,255,255,0.07)" }}>
                               {/* 두 폰 목업 나란히 */}
                               <div style={{ display: "flex", gap: "14px", flexShrink: 0 }}>
                                 {(tier.videos ?? []).map((video, j) => (
