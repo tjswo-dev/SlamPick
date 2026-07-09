@@ -491,11 +491,15 @@ export default function LoginPage() {
           {/* Expanded detail — border-radius matches panel top (18px) */}
           {activeId && (() => {
             const svc = SERVICES.find(s => s.id === activeId)!;
+            const activeIndex = SERVICES.findIndex(s => s.id === activeId);
+            const isFirst = activeIndex === 0;
+            const isLast = activeIndex === SERVICES.length - 1;
+            const detailRadius = `${isFirst ? "0" : "18px"} ${isLast ? "0" : "18px"} 18px 18px`;
             return (
               <div
                 style={{
                   backgroundColor: "#0d0d0d",
-                  borderRadius: "0 0 18px 18px",
+                  borderRadius: detailRadius,
                   padding: "64px 72px 72px",
                   animation: "expandDown 0.42s cubic-bezier(0.4, 0, 0.2, 1)",
                   borderTop: "1px solid rgba(255,255,255,0.06)",
@@ -512,7 +516,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Description */}
-                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px" }}>
+                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all" }}>
                   {svc.detail.description}
                 </p>
 
@@ -524,7 +528,7 @@ export default function LoginPage() {
                       {svc.detail.points.map((pt, i) => (
                         <div key={i} style={{ flex: "1 1 160px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "14px", padding: "22px 24px", border: "1px solid rgba(255,255,255,0.07)" }}>
                           <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.32)", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "9px" }}>{pt.label}</p>
-                          <p style={{ fontSize: "15px", color: "#fff", fontWeight: "700" }}>{pt.value}</p>
+                          <p style={{ fontSize: "15px", color: "#fff", fontWeight: "700", wordBreak: "keep-all" }}>{pt.value}</p>
                         </div>
                       ))}
                     </div>
@@ -547,7 +551,7 @@ export default function LoginPage() {
                           <div style={{ padding: "20px 22px" }}>
                             <ul style={{ margin: "0 0 16px", paddingLeft: "18px" }}>
                               {tier.features.map((f, j) => (
-                                <li key={j} style={{ fontSize: "13px", color: "rgba(255,255,255,0.58)", lineHeight: 1.8 }}>{f}</li>
+                                <li key={j} style={{ fontSize: "13px", color: "rgba(255,255,255,0.58)", lineHeight: 1.8, wordBreak: "keep-all" }}>{f}</li>
                               ))}
                             </ul>
                             <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid rgba(255,255,255,0.25)" }}>
@@ -591,7 +595,7 @@ export default function LoginPage() {
                   <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
                     Expected Outcome
                   </p>
-                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.88, fontWeight: "500" }}>
+                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.88, fontWeight: "500", wordBreak: "keep-all" }}>
                     {svc.detail.effect}
                   </p>
                 </div>
