@@ -86,8 +86,8 @@ const SERVICES: ServiceData[] = [
               challenge: "신규 브랜드 및 해외 론칭 브랜드의 후킹 디렉션을 통한 히어로 콘텐츠 생산 및 콘텐츠 자산 축적",
               outcome: "수개월간 꾸준히 진행 시, 퀄리티 높고 신박한 바이럴 콘텐츠가 터지며 브랜드 효자 제품으로 견인",
               metrics: [
-                { label: "콘텐츠 저장율", value: "+285%" },
-                { label: "브랜드 검색량", value: "+190%" },
+                { label: "누적 조회수", value: "2M+" },
+                { label: "채널 확장", value: "Amazon 매출 2,000%↑" },
               ],
             },
             {
@@ -114,7 +114,7 @@ const SERVICES: ServiceData[] = [
               outcome: "큐텐 카테고리 1위 달성 및 오프라인 매출 증대",
               metrics: [
                 { label: "큐텐 카테고리", value: "1위" },
-                { label: "오프라인 매출", value: "증대" },
+                { label: "오프라인 매출", value: "500%↑" },
               ],
             },
             {
@@ -140,8 +140,8 @@ const SERVICES: ServiceData[] = [
               challenge: "브랜드 소구점과 중동 국가 타겟한 하이소사이어티·웰니스 인플루언서 매칭",
               outcome: "초도 물량 완판 및 중동 진출 성공, 공동 런칭 후 매출 0에서 월매출 20억 이상의 히트상품으로 성장",
               metrics: [
+                { label: "중동 시장 진출", value: "성공" },
                 { label: "초도 물량", value: "완판" },
-                { label: "월매출", value: "20억+" },
               ],
             },
             {
@@ -180,7 +180,7 @@ const SERVICES: ServiceData[] = [
   {
     id: "organic",
     tag: "04",
-    title: "큐레이션 추천 콘텐츠",
+    title: "큐레이션 콘텐츠",
     titleEn: "Authentic Curation Content",
     summary: "여러 카테고리의 제품을 자연스럽게 큐레이션하여 광고 거부감 없이 소비자의 자발적 구매를 이끌어냅니다.",
     detail: {
@@ -549,6 +549,25 @@ export default function LoginPage() {
               }}
             />
           </div>
+
+          {/* Subtitle */}
+          <p
+            style={{
+              marginTop: "28px",
+              fontSize: "clamp(14px, 1.6vw, 17px)",
+              color: "#6b7280",
+              fontWeight: "400",
+              letterSpacing: "-0.01em",
+              lineHeight: 1.7,
+              textAlign: "center",
+              opacity: servicesExpanded ? 1 : 0,
+              transform: servicesExpanded ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s",
+              pointerEvents: "none",
+            }}
+          >
+            브랜드 성장 목표에 맞는 오가닉 큐레이션 콘텐츠와 최적의 마케팅 솔루션을 제공합니다.
+          </p>
 
         </div>
 
