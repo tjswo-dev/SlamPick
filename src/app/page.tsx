@@ -688,11 +688,11 @@ export default function LoginPage() {
                               {/* 오른쪽 설명 — 첫 번째 영상 기준 1개만 */}
                               {(tier.videos ?? []).slice(0, 1).map((video, j) => (
                                 <div key={j} style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ marginBottom: "48px" }}>
+                                  <div style={{ marginBottom: "72px" }}>
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Challenge</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
                                   </div>
-                                  <div style={{ marginBottom: "48px" }}>
+                                  <div style={{ marginBottom: "72px" }}>
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Outcome</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.outcome}</p>
                                   </div>
