@@ -194,6 +194,9 @@ const SERVICES: ServiceData[] = [
       ],
       effect:
         "제품의 효능과 브랜드에 대한 소비자의 절대적인 신뢰도 확보",
+      videoUrls: [
+        "https://www.instagram.com/reel/DYq3zKax3Z7/embed/captioned/",
+      ],
     },
   },
   {
