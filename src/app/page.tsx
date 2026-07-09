@@ -717,8 +717,8 @@ export default function LoginPage() {
                             </div>
                             {/* Tier effect */}
                             <div style={{ marginTop: "20px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "18px 24px", borderLeft: "2px solid rgba(255,255,255,0.2)" }}>
-                              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", lineHeight: 1.75, wordBreak: "keep-all" }}>
-                                <strong style={{ color: "rgba(255,255,255,0.85)" }}>기대 효과 — </strong>{tier.effect}
+                              <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>
+                                <strong style={{ color: "#fff" }}>기대 효과 — </strong>{tier.effect}
                               </p>
                             </div>
                             {/* Tier divider */}
@@ -748,8 +748,8 @@ export default function LoginPage() {
                                   ))}
                                 </ul>
                                 <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid rgba(255,255,255,0.25)" }}>
-                                  <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.7 }}>
-                                    <strong style={{ color: "rgba(255,255,255,0.72)" }}>기대 효과 — </strong>{tier.effect}
+                                  <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.7)", lineHeight: 1.7 }}>
+                                    <strong style={{ color: "#fff" }}>기대 효과 — </strong>{tier.effect}
                                   </p>
                                 </div>
                               </div>
@@ -796,10 +796,10 @@ export default function LoginPage() {
 
                 {/* Expected outcome */}
                 <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.28)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
+                  <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
                     Expected Outcome
                   </p>
-                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.88, fontWeight: "500", wordBreak: "keep-all" }}>
+                  <p style={{ fontSize: "20px", color: "rgba(255,255,255,0.9)", lineHeight: 1.88, fontWeight: "500", wordBreak: "keep-all" }}>
                     {svc.detail.effect}
                   </p>
                 </div>
