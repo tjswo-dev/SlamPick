@@ -478,6 +478,7 @@ export default function LoginPage() {
         {/* Heading */}
         <div ref={slamPickHeadingRef} style={{ textAlign: "center", marginBottom: servicesExpanded ? "72px" : "0" }}>
           <h2
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             style={{
               fontSize: "clamp(48px, 10vw, 96px)",
               fontWeight: "900",
@@ -485,6 +486,7 @@ export default function LoginPage() {
               letterSpacing: "-0.04em",
               lineHeight: 1,
               fontFamily: "system-ui, -apple-system, sans-serif",
+              cursor: "pointer",
             }}
           >
             SLAM PICK
