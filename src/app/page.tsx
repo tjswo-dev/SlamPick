@@ -486,24 +486,27 @@ export default function LoginPage() {
       <section style={{ backgroundColor: "#f2f2f2", padding: "72px 40px 120px" }}>
         {/* Heading */}
         <div style={{ textAlign: "center", marginBottom: "72px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "700", color: "#aaa", letterSpacing: "0.22em", marginBottom: "14px", textTransform: "uppercase" }}>
-            Service Portfolio
-          </p>
           <h2
             style={{
-              fontSize: "clamp(34px, 5vw, 58px)",
+              fontSize: "clamp(48px, 8vw, 96px)",
               fontWeight: "900",
-              color: "#111",
+              color: "#000",
               letterSpacing: "-0.04em",
-              lineHeight: 1.1,
-              marginBottom: "18px",
+              lineHeight: 1,
+              fontFamily: "system-ui, -apple-system, sans-serif",
             }}
           >
-            슬램의 서비스
+            브랜드 성장 목표에 맞는<br />최적의 마케팅 솔루션
           </h2>
-          <p style={{ fontSize: "15px", color: "#777", maxWidth: "460px", margin: "0 auto", lineHeight: 1.8 }}>
-            브랜드 성장 목표에 맞는<br />최적의 인플루언서 마케팅 솔루션을 제공합니다.
-          </p>
+          <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                width: "clamp(280px, 45vw, 460px)",
+                height: "2px",
+                background: "linear-gradient(90deg, transparent, #000, transparent)",
+              }}
+            />
+          </div>
         </div>
 
         {/* Expanding panels */}
