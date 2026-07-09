@@ -748,13 +748,15 @@ export default function LoginPage() {
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Outcome</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.outcome}</p>
                                   </div>
-                                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-                                    {video.metrics.map((m, k) => (
-                                      <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px 28px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)", minWidth: "120px" }}>
-                                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.1em", marginBottom: "10px", textTransform: "uppercase" }}>{m.label}</p>
-                                        <p style={{ fontSize: "28px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{m.value}</p>
-                                      </div>
-                                    ))}
+                                  <div style={{ display: "flex", justifyContent: "center" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+                                      {video.metrics.map((m, k) => (
+                                        <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px 28px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.1em", marginBottom: "10px", textTransform: "uppercase" }}>{m.label}</p>
+                                          <p style={{ fontSize: "28px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{m.value}</p>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               ))}
