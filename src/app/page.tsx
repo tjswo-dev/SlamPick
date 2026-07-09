@@ -652,12 +652,12 @@ export default function LoginPage() {
                             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: "28px", wordBreak: "keep-all" }}>
                               {tier.features.join("  ·  ")}
                             </p>
-                            {/* Video cards — 2개 가로 배치 */}
-                            <div style={{ display: "flex", gap: "16px" }}>
-                              {(tier.videos ?? []).map((video, j) => (
-                                <div key={j} style={{ flex: 1, minWidth: 0, display: "flex", gap: "20px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "24px", border: "1px solid rgba(255,255,255,0.07)" }}>
-                                  {/* Phone mockup */}
-                                  <div style={{ width: "150px", height: "266px", borderRadius: "18px", border: "4px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {/* Video cards — [영상] [영상] [설명] */}
+                            <div style={{ display: "flex", gap: "28px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "28px 32px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                              {/* 두 폰 목업 나란히 */}
+                              <div style={{ display: "flex", gap: "12px", flexShrink: 0 }}>
+                                {(tier.videos ?? []).map((video, j) => (
+                                  <div key={j} style={{ width: "155px", height: "275px", borderRadius: "20px", border: "4px solid rgba(255,255,255,0.1)", overflow: "hidden", backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                     {video.url ? (
                                       <iframe
                                         src={video.url}
@@ -674,21 +674,26 @@ export default function LoginPage() {
                                       </div>
                                     )}
                                   </div>
-                                  {/* Content */}
-                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                ))}
+                              </div>
+
+                              {/* 오른쪽 설명 — 두 영상 설명 세로로 */}
+                              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "24px" }}>
+                                {(tier.videos ?? []).map((video, j) => (
+                                  <div key={j} style={{ paddingBottom: j === 0 ? "24px" : 0, borderBottom: j === 0 ? "1px solid rgba(255,255,255,0.07)" : "none" }}>
                                     <span style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
                                       {video.brandTag}
                                     </span>
-                                    <h4 style={{ fontSize: "22px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "6px", marginBottom: "20px" }}>
+                                    <h4 style={{ fontSize: "20px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "5px", marginBottom: "14px" }}>
                                       {video.brandName}
                                     </h4>
-                                    <div style={{ marginBottom: "12px" }}>
-                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "5px" }}>Challenge</p>
-                                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.challenge}</p>
+                                    <div style={{ marginBottom: "10px" }}>
+                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "4px" }}>Challenge</p>
+                                      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.challenge}</p>
                                     </div>
-                                    <div style={{ marginBottom: "20px" }}>
-                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "5px" }}>Solution</p>
-                                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.solution}</p>
+                                    <div style={{ marginBottom: "14px" }}>
+                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "4px" }}>Solution</p>
+                                      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.solution}</p>
                                     </div>
                                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                                       {video.metrics.map((m, k) => (
@@ -699,8 +704,8 @@ export default function LoginPage() {
                                       ))}
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
                             {/* Tier effect */}
                             <div style={{ marginTop: "20px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "18px 24px", borderLeft: "2px solid rgba(255,255,255,0.2)" }}>
