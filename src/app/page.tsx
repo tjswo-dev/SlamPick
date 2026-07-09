@@ -6,10 +6,8 @@ import { createClient } from "@/lib/supabase";
 
 interface TierVideo {
   url: string;
-  brandTag: string;
-  brandName: string;
   challenge: string;
-  solution: string;
+  outcome: string;
   metrics: { label: string; value: string }[];
 }
 
@@ -85,10 +83,8 @@ const SERVICES: ServiceData[] = [
           videos: [
             {
               url: "https://www.tiktok.com/embed/v2/7530013023667309879",
-              brandTag: "뷰티 / 스킨케어",
-              brandName: "A사",
-              challenge: "해외 신규 론칭, 브랜드 인지도 제로 상태에서 바이럴 베이스 구축 필요",
-              solution: "나노 크리에이터 다수를 활용한 분산형 시딩으로 자연스러운 콘텐츠 자산 확보",
+              challenge: "신규 브랜드 및 해외 론칭 브랜드의 후킹 디렉션을 통한 히어로 콘텐츠 생산 및 콘텐츠 자산 축적",
+              outcome: "수개월간 꾸준히 진행 시, 퀄리티 높고 신박한 바이럴 콘텐츠가 터지며 브랜드 효자 제품으로 견인",
               metrics: [
                 { label: "콘텐츠 저장율", value: "+285%" },
                 { label: "브랜드 검색량", value: "+190%" },
@@ -96,14 +92,9 @@ const SERVICES: ServiceData[] = [
             },
             {
               url: "https://www.instagram.com/reel/DZsStHcB-dj/embed/",
-              brandTag: "헬스 / 건강기능식품",
-              brandName: "B사",
-              challenge: "신규 국가 진입 초기, 소비자 신뢰 기반 부재",
-              solution: "일상 체험 리뷰 형식으로 소비 욕구를 자극하는 오가닉 콘텐츠 운영",
-              metrics: [
-                { label: "인바운드 문의", value: "+340%" },
-                { label: "팔로워 증가율", value: "+220%" },
-              ],
+              challenge: "",
+              outcome: "",
+              metrics: [],
             },
           ],
         },
@@ -119,25 +110,18 @@ const SERVICES: ServiceData[] = [
           videos: [
             {
               url: "https://www.tiktok.com/embed/v2/7645253106598546708",
-              brandTag: "라이프스타일 / 이커머스",
-              brandName: "D사",
-              challenge: "브랜드 신뢰도 부족으로 인한 이탈율 증가",
-              solution: "강한 팔로워십 기반 미들 크리에이터 협업으로 신뢰 기반 구매 유도",
+              challenge: "현지 특성을 분석한 인플루언서 매칭 및 제품 소구점을 제대로 살리는 콘텐츠 제작",
+              outcome: "큐텐 카테고리 1위 달성 및 오프라인 매출 증대",
               metrics: [
-                { label: "팔로워 증가", value: "+320%" },
-                { label: "인게이지먼트율", value: "+180%" },
+                { label: "큐텐 카테고리", value: "1위" },
+                { label: "오프라인 매출", value: "증대" },
               ],
             },
             {
               url: "https://www.instagram.com/reel/DaXZG26NHSh/embed/",
-              brandTag: "뷰티 / 메이크업",
-              brandName: "C사",
-              challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
-              solution: "밀도 높은 팬층을 보유한 미들 크리에이터로 고품질 콘텐츠 자산 확보",
-              metrics: [
-                { label: "콘텐츠 재활용율", value: "+430%" },
-                { label: "구매 전환율", value: "+250%" },
-              ],
+              challenge: "",
+              outcome: "",
+              metrics: [],
             },
           ],
         },
@@ -153,25 +137,18 @@ const SERVICES: ServiceData[] = [
           videos: [
             {
               url: "https://www.tiktok.com/embed/v2/7471724419216346398",
-              brandTag: "프리미엄 / 뷰티",
-              brandName: "E사",
-              challenge: "브랜드 이미지 고급화 및 대중 인지도 확장 동시 달성",
-              solution: "메가 크리에이터의 강력한 이미지를 브랜드와 융합하여 프리미엄 포지셔닝 구축",
+              challenge: "브랜드 소구점과 중동 국가 타겟한 하이소사이어티·웰니스 인플루언서 매칭",
+              outcome: "초도 물량 완판 및 중동 진출 성공, 공동 런칭 후 매출 0에서 월매출 20억 이상의 히트상품으로 성장",
               metrics: [
-                { label: "브랜드 인지도", value: "+500%" },
-                { label: "광고 도달률", value: "+850%" },
+                { label: "초도 물량", value: "완판" },
+                { label: "월매출", value: "20억+" },
               ],
             },
             {
               url: "https://www.instagram.com/p/DZ99OkNqyi_/embed/",
-              brandTag: "뷰티 / 웰니스",
-              brandName: "F사",
-              challenge: "글로벌 시장 대규모 노출 및 단기 매출 증대 목표",
-              solution: "메가 크리에이터 집중 투자로 압도적 도달률과 즉각적인 전환 동시 창출",
-              metrics: [
-                { label: "콘텐츠 조회수", value: "+1,200%" },
-                { label: "매출 증대", value: "+380%" },
-              ],
+              challenge: "",
+              outcome: "",
+              metrics: [],
             },
           ],
         },
@@ -733,19 +710,13 @@ export default function LoginPage() {
                               {/* 오른쪽 설명 — 첫 번째 영상 기준 1개만 */}
                               {(tier.videos ?? []).slice(0, 1).map((video, j) => (
                                 <div key={j} style={{ flex: 1, minWidth: 0 }}>
-                                  <span style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.5)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
-                                    {video.brandTag}
-                                  </span>
-                                  <h4 style={{ fontSize: "26px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "8px", marginBottom: "28px" }}>
-                                    {video.brandName}
-                                  </h4>
-                                  <div style={{ marginBottom: "16px" }}>
-                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Challenge</p>
+                                  <div style={{ marginBottom: "20px" }}>
+                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Challenge</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
                                   </div>
                                   <div style={{ marginBottom: "28px" }}>
-                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Solution</p>
-                                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.solution}</p>
+                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Outcome</p>
+                                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.outcome}</p>
                                   </div>
                                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                                     {video.metrics.map((m, k) => (
@@ -757,12 +728,6 @@ export default function LoginPage() {
                                   </div>
                                 </div>
                               ))}
-                            </div>
-                            {/* Tier effect */}
-                            <div style={{ marginTop: "20px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "18px 24px", borderLeft: "2px solid rgba(255,255,255,0.2)" }}>
-                              <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>
-                                <strong style={{ color: "#fff" }}>기대 효과 — </strong>{tier.effect}
-                              </p>
                             </div>
                             {/* Tier divider */}
                             {i < svc.detail.tiers!.length - 1 && (
