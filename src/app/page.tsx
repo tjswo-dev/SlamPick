@@ -488,7 +488,7 @@ export default function LoginPage() {
         <div style={{ textAlign: "center", marginBottom: "72px" }}>
           <h2
             style={{
-              fontSize: "clamp(48px, 8vw, 96px)",
+              fontSize: "clamp(48px, 10vw, 96px)",
               fontWeight: "900",
               color: "#000",
               letterSpacing: "-0.04em",
@@ -496,7 +496,7 @@ export default function LoginPage() {
               fontFamily: "system-ui, -apple-system, sans-serif",
             }}
           >
-            브랜드 성장 목표에 맞는<br />최적의 마케팅 솔루션
+            SLAM PICK
           </h2>
           <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
             <div
