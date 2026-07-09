@@ -235,6 +235,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [servicesExpanded, setServicesExpanded] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,6 +257,7 @@ export default function LoginPage() {
   };
 
   const scrollToServices = () => {
+    setServicesExpanded(true);
     servicesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -485,7 +487,7 @@ export default function LoginPage() {
       {/* ── SERVICES SECTION ── */}
       <section style={{ backgroundColor: "#f2f2f2", padding: "72px 40px 120px" }}>
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: "72px" }}>
+        <div style={{ textAlign: "center", marginBottom: servicesExpanded ? "72px" : "0" }}>
           <h2
             style={{
               fontSize: "clamp(48px, 10vw, 96px)",
@@ -498,19 +500,73 @@ export default function LoginPage() {
           >
             SLAM PICK
           </h2>
-          <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
+
+          {/* Bar + glow — 히어로와 동일 구조 */}
+          <div style={{ position: "relative", display: "flex", justifyContent: "center", marginTop: "16px" }}>
             <div
               style={{
-                width: "clamp(280px, 45vw, 460px)",
+                width: servicesExpanded ? "100vw" : "clamp(280px, 45vw, 460px)",
                 height: "2px",
                 background: "linear-gradient(90deg, transparent, #000, transparent)",
+                transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.9s ease",
+                boxShadow: servicesExpanded
+                  ? "0 0 12px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.25), 0 0 100px rgba(0,0,0,0.08)"
+                  : "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "2px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "100vw",
+                height: servicesExpanded ? "45vh" : "0",
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0.03) 40%, transparent 100%)",
+                transition: "height 1.4s ease 0.15s",
+                pointerEvents: "none",
               }}
             />
           </div>
+
+          {/* 서비스 보기 버튼 — 미확장 상태에서만 표시 */}
+          {!servicesExpanded && (
+            <button
+              onClick={() => setServicesExpanded(true)}
+              style={{
+                marginTop: "40px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "7px",
+                padding: "8px 20px",
+                animation: "bounce 2.4s ease-in-out infinite",
+                margin: "40px auto 0",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.querySelector(".svc-label2") as HTMLElement).style.color = "rgba(0,0,0,0.8)";
+                (e.currentTarget.querySelector(".svc-arrow2") as HTMLElement).style.color = "rgba(0,0,0,0.8)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.querySelector(".svc-label2") as HTMLElement).style.color = "rgba(0,0,0,0.35)";
+                (e.currentTarget.querySelector(".svc-arrow2") as HTMLElement).style.color = "rgba(0,0,0,0.35)";
+              }}
+            >
+              <span className="svc-label2" style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.18em", color: "rgba(0,0,0,0.35)", transition: "color 0.2s", textTransform: "uppercase" }}>
+                서비스 소개
+              </span>
+              <span className="svc-arrow2" style={{ fontSize: "14px", color: "rgba(0,0,0,0.35)", transition: "color 0.2s", lineHeight: 1 }}>
+                ↓
+              </span>
+            </button>
+          )}
         </div>
 
-        {/* Expanding panels */}
-        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+        {/* Expanding panels — 확장 시 페이드인 */}
+        <div style={{ maxWidth: "1280px", margin: "0 auto", animation: servicesExpanded ? "expandDown 0.8s ease 0.7s both" : "none", display: servicesExpanded ? "block" : "none" }}>
           {/* Panel row */}
           <div style={{ display: "flex", gap: "10px" }}>
             {SERVICES.map((service) => {
