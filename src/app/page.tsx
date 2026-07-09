@@ -606,7 +606,7 @@ export default function LoginPage() {
                       {svc.title}
                     </h2>
                   </div>
-                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
+                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
                     {svc.detail.description}
                   </p>
                 </>
