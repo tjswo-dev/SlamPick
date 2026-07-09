@@ -171,7 +171,7 @@ export default function Dashboard() {
             letterSpacing: "-0.04em",
             cursor: "pointer",
           }}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/")}
         >
           SLAM PICK
         </h1>
