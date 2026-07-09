@@ -56,6 +56,7 @@ const SERVICES: ServiceData[] = [
       videoUrls: [
         "https://www.instagram.com/reel/DZO32cqSIJW/embed/captioned/",
         "https://www.instagram.com/reel/DVIKGv5k3Ia/embed/captioned/",
+        "https://www.tiktok.com/embed/v2/7640331701192871189",
       ],
     },
   },
