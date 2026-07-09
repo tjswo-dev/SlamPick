@@ -83,7 +83,7 @@ const SERVICES: ServiceData[] = [
             "수개월간 꾸준히 진행 시, 퀄리티 높고 신박한 바이럴 콘텐츠가 터지며 브랜드 효자 제품으로 견인",
           videos: [
             {
-              url: "",
+              url: "https://www.tiktok.com/embed/v2/7530013023667309879",
               brandTag: "뷰티 / 스킨케어",
               brandName: "A사",
               challenge: "해외 신규 론칭, 브랜드 인지도 제로 상태에서 바이럴 베이스 구축 필요",
@@ -94,7 +94,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "",
+              url: "https://www.instagram.com/reel/DZsStHcB-dj/embed/captioned/",
               brandTag: "헬스 / 건강기능식품",
               brandName: "B사",
               challenge: "신규 국가 진입 초기, 소비자 신뢰 기반 부재",
@@ -151,7 +151,7 @@ const SERVICES: ServiceData[] = [
             "메가 크리에이터가 가진 강력한 이미지를 브랜드 이미지로 융합시켜 가치 격상",
           videos: [
             {
-              url: "",
+              url: "https://www.tiktok.com/embed/v2/7471724419216346398",
               brandTag: "프리미엄 / 뷰티",
               brandName: "E사",
               challenge: "브랜드 이미지 고급화 및 대중 인지도 확장 동시 달성",
@@ -162,7 +162,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "",
+              url: "https://www.instagram.com/p/DZ99OkNqyi_/embed/captioned/",
               brandTag: "뷰티 / 웰니스",
               brandName: "F사",
               challenge: "글로벌 시장 대규모 노출 및 단기 매출 증대 목표",
