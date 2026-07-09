@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
@@ -205,6 +205,7 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
   const servicesRef = useRef<HTMLDivElement>(null);
+  const slamPickHeadingRef = useRef<HTMLDivElement>(null);
 
   const [expanded, setExpanded] = useState(false);
   const [email, setEmail] = useState("");
@@ -237,6 +238,17 @@ export default function LoginPage() {
     setServicesExpanded(true);
     servicesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    const el = slamPickHeadingRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setServicesExpanded(true); },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
@@ -464,7 +476,7 @@ export default function LoginPage() {
       {/* ── SERVICES SECTION ── */}
       <section style={{ backgroundColor: "#f2f2f2", padding: "72px 40px 120px" }}>
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: servicesExpanded ? "72px" : "0" }}>
+        <div ref={slamPickHeadingRef} style={{ textAlign: "center", marginBottom: servicesExpanded ? "72px" : "0" }}>
           <h2
             style={{
               fontSize: "clamp(48px, 10vw, 96px)",
@@ -506,40 +518,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* 서비스 보기 버튼 — 미확장 상태에서만 표시 */}
-          {!servicesExpanded && (
-            <button
-              onClick={() => setServicesExpanded(true)}
-              style={{
-                marginTop: "40px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "7px",
-                padding: "8px 20px",
-                animation: "bounce 2.4s ease-in-out infinite",
-                margin: "40px auto 0",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget.querySelector(".svc-label2") as HTMLElement).style.color = "rgba(0,0,0,0.8)";
-                (e.currentTarget.querySelector(".svc-arrow2") as HTMLElement).style.color = "rgba(0,0,0,0.8)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget.querySelector(".svc-label2") as HTMLElement).style.color = "rgba(0,0,0,0.35)";
-                (e.currentTarget.querySelector(".svc-arrow2") as HTMLElement).style.color = "rgba(0,0,0,0.35)";
-              }}
-            >
-              <span className="svc-label2" style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.18em", color: "rgba(0,0,0,0.35)", transition: "color 0.2s", textTransform: "uppercase" }}>
-                서비스 소개
-              </span>
-              <span className="svc-arrow2" style={{ fontSize: "14px", color: "rgba(0,0,0,0.35)", transition: "color 0.2s", lineHeight: 1 }}>
-                ↓
-              </span>
-            </button>
-          )}
         </div>
 
         {/* Expanding panels — 확장 시 페이드인 */}
