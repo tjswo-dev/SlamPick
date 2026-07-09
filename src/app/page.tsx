@@ -567,7 +567,7 @@ export default function LoginPage() {
               pointerEvents: "none",
             }}
           >
-            브랜드 성장 목표에 맞는 오가닉 큐레이션 콘텐츠와 최적의 마케팅 솔루션을 제공합니다.
+            브랜드 고유의 오가닉한 매력을 살려, 성장 목표에 맞는 최적의 인플루언서 마케팅 솔루션을 제공합니다.
           </p>
 
         </div>
