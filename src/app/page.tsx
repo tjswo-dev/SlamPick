@@ -22,7 +22,7 @@ interface ServiceData {
     points: { label: string; value: string }[];
     effect: string;
     tiers?: ServiceTier[];
-    videoUrl?: string;
+    videoUrls?: string[];
   };
 }
 
@@ -35,15 +35,18 @@ const SERVICES: ServiceData[] = [
     summary: "축제, 약국, 병의원 등 오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작·전달합니다.",
     detail: {
       description:
-        "오프라인 현장에 직접 방문하여 제품과 브랜드의 생생한 경험을 콘텐츠로 제작·전달합니다. 정보 저장, 가볼만한 장소, '가서 이거 사야지' 같은 자연스러운 소비 욕구를 자극하여 자발적인 인바운드 고객을 증대시킵니다.",
+        "오프라인 현장에 직접 방문하여 제품과 브랜드의 생생한 경험을 콘텐츠로 제작·전달합니다.\n정보 저장, 가볼만한 장소, '가서 이거 사야지' 같은 자연스러운 소비 욕구를 자극하여 자발적인 인바운드 고객을 증대시킵니다.",
       points: [
-        { label: "주요 거점", value: "축제 · 약국 · 병의원" },
+        { label: "주요 거점", value: "축제 · 팝업 스토어 · 약국 · 병의원" },
         { label: "운영 방식", value: "오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작 및 전달" },
-        { label: "콘텐츠 형태", value: "정보 저장 · 가볼만한 장소 · 체험 리뷰" },
+        { label: "콘텐츠 전략", value: "정보 저장 · 가볼만한 장소 · 체험 리뷰" },
       ],
       effect:
         "브랜드에 대한 호기심을 자극하여 자발적인 인바운드 고객 증대 — 정보 저장, 가볼만한 장소, '가서 이거 사야지' 하는 콘텐츠",
-      videoUrl: undefined,
+      videoUrls: [
+        "https://www.instagram.com/reel/DZO32cqSIJW/embed/captioned/",
+        "https://www.instagram.com/reel/DVIKGv5k3Ia/embed/captioned/",
+      ],
     },
   },
   {
@@ -90,7 +93,6 @@ const SERVICES: ServiceData[] = [
             "메가 크리에이터가 가진 강력한 이미지를 브랜드 이미지로 융합시켜 가치 격상",
         },
       ],
-      videoUrl: undefined,
     },
   },
   {
@@ -109,7 +111,6 @@ const SERVICES: ServiceData[] = [
       ],
       effect:
         "제품의 효능과 브랜드에 대한 소비자의 절대적인 신뢰도 확보",
-      videoUrl: undefined,
     },
   },
   {
@@ -128,7 +129,6 @@ const SERVICES: ServiceData[] = [
       ],
       effect:
         "광고에 대한 거부감을 낮추고, 찐 후기처럼 느껴지는 자연스러운(오가닉) 추천을 통해 소비 전환 유도",
-      videoUrl: undefined,
     },
   },
 ];
@@ -516,7 +516,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Description */}
-                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all" }}>
+                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
                   {svc.detail.description}
                 </p>
 
@@ -570,14 +570,18 @@ export default function LoginPage() {
                 <div style={{ marginBottom: "56px" }}>
                   <SectionLabel dark>레퍼런스 영상</SectionLabel>
                   <div style={{ marginTop: "20px" }}>
-                    {svc.detail.videoUrl ? (
-                      <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
-                        <iframe
-                          src={svc.detail.videoUrl}
-                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
+                    {svc.detail.videoUrls && svc.detail.videoUrls.length > 0 ? (
+                      <div style={{ display: "flex", gap: "16px" }}>
+                        {svc.detail.videoUrls.map((url, i) => (
+                          <div key={i} style={{ flex: 1, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
+                            <iframe
+                              src={url}
+                              style={{ width: "100%", height: "560px", border: "none", display: "block" }}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div style={{ height: "260px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
