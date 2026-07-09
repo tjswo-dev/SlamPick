@@ -657,7 +657,7 @@ export default function LoginPage() {
                               {/* 두 폰 목업 나란히 */}
                               <div style={{ display: "flex", gap: "12px", flexShrink: 0 }}>
                                 {(tier.videos ?? []).map((video, j) => (
-                                  <div key={j} style={{ width: "155px", height: "275px", borderRadius: "20px", border: "4px solid rgba(255,255,255,0.1)", overflow: "hidden", backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <div key={j} style={{ width: "155px", height: "380px", borderRadius: "20px", border: "4px solid rgba(255,255,255,0.1)", overflow: "hidden", backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                     {video.url ? (
                                       <iframe
                                         src={video.url}
