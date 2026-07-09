@@ -4,11 +4,21 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
+interface TierVideo {
+  url: string;
+  brandTag: string;
+  brandName: string;
+  challenge: string;
+  solution: string;
+  metrics: { label: string; value: string }[];
+}
+
 interface ServiceTier {
   level: string;
   badge: string;
   features: string[];
   effect: string;
+  videos?: TierVideo[];
 }
 
 interface ServiceData {
@@ -57,7 +67,7 @@ const SERVICES: ServiceData[] = [
     summary: "브랜드 성장 단계에 맞춰 나노·미들·메가급으로 세분화한 맞춤형 콘텐츠 전략을 설계합니다.",
     detail: {
       description:
-        "브랜드의 성장 단계와 마케팅 목적에 맞추어 라이징 나노급, 미들급, 메가급으로 세분화하여 최적의 크리에이터 조합을 설계합니다. 단계별 전략으로 비용 효율성을 극대화하고 목표 달성 속도를 높입니다.",
+        "브랜드의 성장 단계와 마케팅 목적에 맞추어 라이징 나노급, 미들급, 메가급으로 세분화하여 최적의 크리에이터 조합을 설계합니다.",
       points: [],
       effect:
         "단계별 타겟팅을 통해 브랜드 인지도를 체계적으로 쌓고 전환율을 극대화합니다.",
@@ -71,26 +81,98 @@ const SERVICES: ServiceData[] = [
           ],
           effect:
             "수개월간 꾸준히 진행 시, 퀄리티 높고 신박한 바이럴 콘텐츠가 터지며 브랜드 효자 제품으로 견인",
+          videos: [
+            {
+              url: "",
+              brandTag: "뷰티 / 스킨케어",
+              brandName: "A사",
+              challenge: "해외 신규 론칭, 브랜드 인지도 제로 상태에서 바이럴 베이스 구축 필요",
+              solution: "나노 크리에이터 다수를 활용한 분산형 시딩으로 자연스러운 콘텐츠 자산 확보",
+              metrics: [
+                { label: "콘텐츠 저장율", value: "+285%" },
+                { label: "브랜드 검색량", value: "+190%" },
+              ],
+            },
+            {
+              url: "",
+              brandTag: "헬스 / 건강기능식품",
+              brandName: "B사",
+              challenge: "신규 국가 진입 초기, 소비자 신뢰 기반 부재",
+              solution: "일상 체험 리뷰 형식으로 소비 욕구를 자극하는 오가닉 콘텐츠 운영",
+              metrics: [
+                { label: "인바운드 문의", value: "+340%" },
+                { label: "팔로워 증가율", value: "+220%" },
+              ],
+            },
+          ],
         },
         {
           level: "미들급",
           badge: "MIDDLE",
           features: [
             "메가급보다 더 탄탄하고 밀도 높은 팬층 보유",
-            "강한 팔로워십과 활발한 소통",
+            "강한 팔로워십과 활발한 소통으로 높은 신뢰도 형성",
           ],
           effect:
             "브랜드의 2차 마케팅 활용 소재로 사용하기에 가장 적합한 고효율 그룹",
+          videos: [
+            {
+              url: "",
+              brandTag: "뷰티 / 메이크업",
+              brandName: "C사",
+              challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
+              solution: "밀도 높은 팬층을 보유한 미들 크리에이터로 고품질 콘텐츠 자산 확보",
+              metrics: [
+                { label: "콘텐츠 재활용율", value: "+430%" },
+                { label: "구매 전환율", value: "+250%" },
+              ],
+            },
+            {
+              url: "",
+              brandTag: "라이프스타일 / 이커머스",
+              brandName: "D사",
+              challenge: "브랜드 신뢰도 부족으로 인한 이탈율 증가",
+              solution: "강한 팔로워십 기반 미들 크리에이터 협업으로 신뢰 기반 구매 유도",
+              metrics: [
+                { label: "팔로워 증가", value: "+320%" },
+                { label: "인게이지먼트율", value: "+180%" },
+              ],
+            },
+          ],
         },
         {
           level: "메가급",
           badge: "MEGA",
           features: [
             "압도적인 대중적 인지도와 강한 팔로워십 보유",
-            "엄청난 도달률과 노출량 보장",
+            "엄청난 도달률과 노출량으로 단기간 브랜드 각인 효과",
           ],
           effect:
             "메가 크리에이터가 가진 강력한 이미지를 브랜드 이미지로 융합시켜 가치 격상",
+          videos: [
+            {
+              url: "",
+              brandTag: "프리미엄 / 뷰티",
+              brandName: "E사",
+              challenge: "브랜드 이미지 고급화 및 대중 인지도 확장 동시 달성",
+              solution: "메가 크리에이터의 강력한 이미지를 브랜드와 융합하여 프리미엄 포지셔닝 구축",
+              metrics: [
+                { label: "브랜드 인지도", value: "+500%" },
+                { label: "광고 도달률", value: "+850%" },
+              ],
+            },
+            {
+              url: "",
+              brandTag: "뷰티 / 웰니스",
+              brandName: "F사",
+              challenge: "글로벌 시장 대규모 노출 및 단기 매출 증대 목표",
+              solution: "메가 크리에이터 집중 투자로 압도적 도달률과 즉각적인 전환 동시 창출",
+              metrics: [
+                { label: "콘텐츠 조회수", value: "+1,200%" },
+                { label: "매출 증대", value: "+380%" },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -505,20 +587,36 @@ export default function LoginPage() {
                   borderTop: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                {/* Header */}
-                <div style={{ marginBottom: "52px" }}>
-                  <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
-                    {svc.tag} · {svc.titleEn}
-                  </p>
-                  <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                    {svc.title}
-                  </h2>
-                </div>
-
-                {/* Description */}
-                <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
-                  {svc.detail.description}
-                </p>
+                {/* Header — seeding: 2-column (title left, description right) */}
+                {svc.id === "seeding" ? (
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: "64px", marginBottom: "52px" }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
+                        {svc.tag} · {svc.titleEn}
+                      </p>
+                      <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                        {svc.title}
+                      </h2>
+                    </div>
+                    <p style={{ flex: 1, fontSize: "15px", color: "rgba(255,255,255,0.55)", lineHeight: 1.85, wordBreak: "keep-all", paddingBottom: "4px" }}>
+                      {svc.detail.description}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: "52px" }}>
+                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
+                        {svc.tag} · {svc.titleEn}
+                      </p>
+                      <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                        {svc.title}
+                      </h2>
+                    </div>
+                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
+                      {svc.detail.description}
+                    </p>
+                  </>
+                )}
 
                 {/* Key points */}
                 {svc.detail.points.length > 0 && (
@@ -538,31 +636,115 @@ export default function LoginPage() {
                 {/* Tiers */}
                 {svc.detail.tiers && svc.detail.tiers.length > 0 && (
                   <div style={{ marginBottom: "56px" }}>
-                    <SectionLabel dark>규모별 운영 전략</SectionLabel>
-                    <div style={{ display: "flex", gap: "14px", marginTop: "20px" }}>
-                      {svc.detail.tiers.map((tier, i) => (
-                        <div key={i} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
-                          <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "10px" }}>
-                            <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.13)", color: "#fff", padding: "3px 12px", borderRadius: "20px", letterSpacing: "0.1em", flexShrink: 0 }}>
-                              {tier.badge}
-                            </span>
-                            <span style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>{tier.level}</span>
-                          </div>
-                          <div style={{ padding: "20px 22px" }}>
-                            <ul style={{ margin: "0 0 16px", paddingLeft: "18px" }}>
-                              {tier.features.map((f, j) => (
-                                <li key={j} style={{ fontSize: "13px", color: "rgba(255,255,255,0.58)", lineHeight: 1.8, wordBreak: "keep-all" }}>{f}</li>
+                    {svc.id === "seeding" ? (
+                      /* ── 시딩: 나노/미들/메가 영상+효과 레이아웃 ── */
+                      <div>
+                        {svc.detail.tiers.map((tier, i) => (
+                          <div key={i} style={{ marginBottom: i < svc.detail.tiers!.length - 1 ? "64px" : 0 }}>
+                            {/* Tier header */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "12px" }}>
+                              <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "#fff", color: "#000", padding: "4px 14px", borderRadius: "20px", letterSpacing: "0.1em" }}>
+                                {tier.badge}
+                              </span>
+                              <span style={{ fontSize: "22px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em" }}>{tier.level}</span>
+                            </div>
+                            {/* Features */}
+                            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: "28px", wordBreak: "keep-all" }}>
+                              {tier.features.join("  ·  ")}
+                            </p>
+                            {/* Video cards */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                              {(tier.videos ?? []).map((video, j) => (
+                                <div key={j} style={{ display: "flex", gap: "40px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "28px 32px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                  {/* Phone mockup */}
+                                  <div style={{ width: "210px", height: "375px", borderRadius: "24px", border: "5px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    {video.url ? (
+                                      <iframe
+                                        src={video.url}
+                                        style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                      />
+                                    ) : (
+                                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                                        <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <span style={{ fontSize: "14px", marginLeft: "2px", color: "rgba(255,255,255,0.3)" }}>▶</span>
+                                        </div>
+                                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", fontWeight: "500" }}>영상 준비중</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Content */}
+                                  <div style={{ flex: 1, paddingTop: "4px" }}>
+                                    <span style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                                      {video.brandTag}
+                                    </span>
+                                    <h4 style={{ fontSize: "28px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "8px", marginBottom: "28px" }}>
+                                      {video.brandName}
+                                    </h4>
+                                    <div style={{ marginBottom: "16px" }}>
+                                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Challenge</p>
+                                      <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
+                                    </div>
+                                    <div style={{ marginBottom: "28px" }}>
+                                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Solution</p>
+                                      <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.solution}</p>
+                                    </div>
+                                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                                      {video.metrics.map((m, k) => (
+                                        <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "12px", padding: "14px 20px", minWidth: "110px" }}>
+                                          <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.08em", marginBottom: "6px" }}>{m.label}</p>
+                                          <p style={{ fontSize: "22px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>{m.value}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
                               ))}
-                            </ul>
-                            <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid rgba(255,255,255,0.25)" }}>
-                              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.7 }}>
-                                <strong style={{ color: "rgba(255,255,255,0.72)" }}>기대 효과 — </strong>{tier.effect}
+                            </div>
+                            {/* Tier effect */}
+                            <div style={{ marginTop: "20px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "18px 24px", borderLeft: "2px solid rgba(255,255,255,0.2)" }}>
+                              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", lineHeight: 1.75, wordBreak: "keep-all" }}>
+                                <strong style={{ color: "rgba(255,255,255,0.85)" }}>기대 효과 — </strong>{tier.effect}
                               </p>
                             </div>
+                            {/* Tier divider */}
+                            {i < svc.detail.tiers!.length - 1 && (
+                              <div style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.07)", marginTop: "64px" }} />
+                            )}
                           </div>
+                        ))}
+                      </div>
+                    ) : (
+                      /* ── 일반 티어 카드 레이아웃 ── */
+                      <>
+                        <SectionLabel dark>규모별 운영 전략</SectionLabel>
+                        <div style={{ display: "flex", gap: "14px", marginTop: "20px" }}>
+                          {svc.detail.tiers.map((tier, i) => (
+                            <div key={i} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
+                              <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "10px" }}>
+                                <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.13)", color: "#fff", padding: "3px 12px", borderRadius: "20px", letterSpacing: "0.1em", flexShrink: 0 }}>
+                                  {tier.badge}
+                                </span>
+                                <span style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>{tier.level}</span>
+                              </div>
+                              <div style={{ padding: "20px 22px" }}>
+                                <ul style={{ margin: "0 0 16px", paddingLeft: "18px" }}>
+                                  {tier.features.map((f, j) => (
+                                    <li key={j} style={{ fontSize: "13px", color: "rgba(255,255,255,0.58)", lineHeight: 1.8, wordBreak: "keep-all" }}>{f}</li>
+                                  ))}
+                                </ul>
+                                <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "12px 16px", borderLeft: "3px solid rgba(255,255,255,0.25)" }}>
+                                  <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.7 }}>
+                                    <strong style={{ color: "rgba(255,255,255,0.72)" }}>기대 효과 — </strong>{tier.effect}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </>
+                    )}
                   </div>
                 )}
 
