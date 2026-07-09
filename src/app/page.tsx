@@ -35,7 +35,7 @@ const SERVICES: ServiceData[] = [
     summary: "축제, 약국, 병의원 등 오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작·전달합니다.",
     detail: {
       description:
-        "오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작 및 전달하는 서비스입니다. 정보 저장, 가볼만한 장소, '가서 이거 사야지'라는 자연스러운 소비 욕구를 자극하는 콘텐츠로 자발적인 인바운드 고객을 증대시킵니다.",
+        "오프라인 현장에 직접 방문하여 제품과 브랜드의 생생한 경험을 콘텐츠로 제작·전달합니다. 정보 저장, 가볼만한 장소, '가서 이거 사야지' 같은 자연스러운 소비 욕구를 자극하여 자발적인 인바운드 고객을 증대시킵니다.",
       points: [
         { label: "주요 거점", value: "축제 · 약국 · 병의원" },
         { label: "운영 방식", value: "오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작 및 전달" },
@@ -411,7 +411,7 @@ export default function LoginPage() {
             슬램의 서비스
           </h2>
           <p style={{ fontSize: "15px", color: "#777", maxWidth: "460px", margin: "0 auto", lineHeight: 1.8 }}>
-            브랜드의 성장 목표에 맞는 최적의<br />마케팅 솔루션을 제공합니다.
+            브랜드 성장 목표에 맞는<br />최적의 인플루언서 마케팅 솔루션을 제공합니다.
           </p>
         </div>
 
@@ -488,14 +488,14 @@ export default function LoginPage() {
             })}
           </div>
 
-          {/* Expanded detail */}
+          {/* Expanded detail — border-radius matches panel top (18px) */}
           {activeId && (() => {
             const svc = SERVICES.find(s => s.id === activeId)!;
             return (
               <div
                 style={{
                   backgroundColor: "#0d0d0d",
-                  borderRadius: "0 0 24px 24px",
+                  borderRadius: "0 0 18px 18px",
                   padding: "64px 72px 72px",
                   animation: "expandDown 0.42s cubic-bezier(0.4, 0, 0.2, 1)",
                   borderTop: "1px solid rgba(255,255,255,0.06)",
