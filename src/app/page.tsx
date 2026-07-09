@@ -764,17 +764,21 @@ export default function LoginPage() {
                   <SectionLabel dark>레퍼런스 영상</SectionLabel>
                   <div style={{ marginTop: "20px" }}>
                     {svc.detail.videoUrls && svc.detail.videoUrls.length > 0 ? (
-                      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-                        {svc.detail.videoUrls.map((url, i) => (
-                          <div key={i} style={{ width: "400px", flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
+                      <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap" }}>
+                        {svc.detail.videoUrls.map((url, i) => {
+                          const vw = svc.detail.videoUrls!.length >= 3 ? "330px" : "400px";
+                          const vh = svc.detail.videoUrls!.length >= 3 ? "640px" : "780px";
+                          return (
+                          <div key={i} style={{ width: vw, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
                             <iframe
                               src={url}
-                              style={{ width: "400px", height: "780px", border: "none", display: "block" }}
+                              style={{ width: vw, height: vh, border: "none", display: "block" }}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                             />
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div style={{ height: "260px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
