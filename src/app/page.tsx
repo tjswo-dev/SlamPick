@@ -214,6 +214,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [servicesExpanded, setServicesExpanded] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<{ email: string } | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,6 +239,12 @@ export default function LoginPage() {
     setServicesExpanded(true);
     servicesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setLoggedInUser({ email: data.user.email ?? "" });
+    });
+  }, []);
 
   useEffect(() => {
     const el = slamPickHeadingRef.current;
@@ -345,7 +352,29 @@ export default function LoginPage() {
             marginTop: "48px",
           }}
         >
-          {!expanded ? (
+          {loggedInUser ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", animation: "fadeSlideIn 0.5s ease both" }}>
+              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textAlign: "center", letterSpacing: "0.04em" }}>
+                {loggedInUser.email}
+              </p>
+              <button
+                onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
+                style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
+              >
+                대시보드로 이동 →
+              </button>
+              <button
+                onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); }}
+                style={{ width: "100%", background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", padding: "8px", fontSize: "12px", cursor: "pointer", transition: "color 0.2s", letterSpacing: "0.08em" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
+              >
+                로그아웃
+              </button>
+            </div>
+          ) : !expanded ? (
             <button
               onClick={() => setExpanded(true)}
               style={{
@@ -426,6 +455,7 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+
 
         {/* 서비스 소개 ↓ — bottom of hero */}
         <button
