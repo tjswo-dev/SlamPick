@@ -805,7 +805,7 @@ export default function LoginPage() {
                 )}
 
                 {/* Video */}
-                <div style={{ marginBottom: "56px" }}>
+                {svc.id !== "seeding" && <div style={{ marginBottom: "56px" }}>
                   <SectionLabel dark>레퍼런스 영상</SectionLabel>
                   <div style={{ marginTop: "20px" }}>
                     {svc.detail.videoUrls && svc.detail.videoUrls.length > 0 ? (
@@ -835,7 +835,7 @@ export default function LoginPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </div>}
 
                 {/* Expected outcome */}
                 <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
