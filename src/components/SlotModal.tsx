@@ -33,6 +33,7 @@ interface SlotModalProps {
 
 export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill }: SlotModalProps) {
   const [step, setStep] = useState<"guide" | "form" | "success">("guide");
+  const [selectedSlotId, setSelectedSlotId] = useState(slotId);
   const [reserveAll, setReserveAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -52,14 +53,14 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill
 
   const availableSlots = campaign.slots.filter((s) => s.status === "available");
   const availableCount = availableSlots.length;
-  const thisSlot = campaign.slots.find((s) => s.id === slotId);
+  const thisSlot = campaign.slots.find((s) => s.id === selectedSlotId);
   const isClosed = thisSlot?.status === "filled" || thisSlot?.status === "reserved";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
     setSubmitting(true);
-    const targetSlotIds = reserveAll ? availableSlots.map((s) => s.id) : [slotId];
+    const targetSlotIds = reserveAll ? availableSlots.map((s) => s.id) : [selectedSlotId];
     const result = await onSubmit({
       campaignId: campaign.id,
       slotId: targetSlotIds[0],
@@ -121,7 +122,7 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill
         >
           <div>
             <p style={{ fontSize: "11px", color: "#9ca3af", letterSpacing: "0.08em", marginBottom: "6px", fontWeight: "600" }}>
-              SLOT #{slotId} · {platformLabel}
+              SLOT #{selectedSlotId} · {platformLabel}
             </p>
             <h2 style={{ fontSize: "18px", fontWeight: "800", color: "#111", lineHeight: "1.3" }}>
               {campaign.contentTitle}
@@ -213,57 +214,56 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill
             </Section>
 
             {/* Slot visual */}
-            <Section title="현재 슬롯 현황">
+            <Section title="현재 슬롯 현황 — 슬롯을 클릭해 변경하세요">
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                {campaign.slots.map((slot) => (
-                  <div
-                    key={slot.id}
-                    style={{
-                      padding: "8px 12px",
-                      border: `1.5px solid ${
-                        slot.status === "filled"
-                          ? "#e5e7eb"
-                          : slot.status === "reserved"
-                          ? "#fde68a"
-                          : slot.id === slotId
-                          ? "#4ade80"
+                {campaign.slots.map((slot) => {
+                  const isSelected = slot.id === selectedSlotId;
+                  const isAvailable = slot.status === "available";
+                  return (
+                    <div
+                      key={slot.id}
+                      onClick={() => { if (isAvailable) setSelectedSlotId(slot.id); }}
+                      style={{
+                        padding: "8px 12px",
+                        border: `1.5px solid ${
+                          slot.status === "filled" ? "#e5e7eb"
+                          : slot.status === "reserved" ? "#fde68a"
+                          : isSelected ? "#4ade80"
                           : "#86efac"
-                      }`,
-                      borderRadius: "8px",
-                      backgroundColor:
-                        slot.status === "filled"
-                          ? "#f9fafb"
-                          : slot.status === "reserved"
-                          ? "#fffbeb"
-                          : slot.id === slotId
-                          ? "#dcfce7"
+                        }`,
+                        borderRadius: "8px",
+                        backgroundColor:
+                          slot.status === "filled" ? "#f9fafb"
+                          : slot.status === "reserved" ? "#fffbeb"
+                          : isSelected ? "#dcfce7"
                           : "#f0fdf4",
-                      fontSize: "11px",
-                      color:
-                        slot.status === "filled"
-                          ? "#d1d5db"
-                          : slot.status === "reserved"
-                          ? "#d97706"
-                          : slot.id === slotId
-                          ? "#16a34a"
+                        fontSize: "11px",
+                        color:
+                          slot.status === "filled" ? "#d1d5db"
+                          : slot.status === "reserved" ? "#d97706"
+                          : isSelected ? "#16a34a"
                           : "#15803d",
-                      fontWeight: slot.id === slotId ? "700" : "500",
-                      minWidth: "76px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ marginBottom: "2px" }}>슬롯 #{slot.id}</div>
-                    <div style={{ fontSize: "10px", opacity: 0.85 }}>
-                      {slot.status === "filled"
-                        ? slot.brandName || "마감"
-                        : slot.status === "reserved"
-                        ? slot.brandName || "협의 중"
-                        : slot.id === slotId
-                        ? "← 선택됨"
-                        : "신청 가능"}
+                        fontWeight: isSelected ? "700" : "500",
+                        minWidth: "76px",
+                        textAlign: "center",
+                        cursor: isAvailable ? "pointer" : "default",
+                        transition: "all 0.15s",
+                        outline: isSelected ? "2px solid #16a34a" : "none",
+                        outlineOffset: "1px",
+                      }}
+                      onMouseEnter={(e) => { if (isAvailable && !isSelected) e.currentTarget.style.backgroundColor = "#bbf7d0"; }}
+                      onMouseLeave={(e) => { if (isAvailable && !isSelected) e.currentTarget.style.backgroundColor = "#f0fdf4"; }}
+                    >
+                      <div style={{ marginBottom: "2px" }}>슬롯 #{slot.id}</div>
+                      <div style={{ fontSize: "10px", opacity: 0.85 }}>
+                        {slot.status === "filled" ? slot.brandName || "마감"
+                          : slot.status === "reserved" ? slot.brandName || "협의 중"
+                          : isSelected ? "✓ 선택됨"
+                          : "신청 가능"}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Section>
 
@@ -561,7 +561,7 @@ export default function SlotModal({ campaign, slotId, onClose, onSubmit, prefill
                     </>
                   ) : (
                     <>
-                      <span style={{ color: "#16a34a", fontWeight: "700" }}>#{slotId}</span>
+                      <span style={{ color: "#16a34a", fontWeight: "700" }}>#{selectedSlotId}</span>
                       <span style={{ color: "#9ca3af" }}> · {(campaign.perSlotCost / 10000).toLocaleString("ko-KR")}만원</span>
                     </>
                   )}
