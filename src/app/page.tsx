@@ -54,8 +54,8 @@ const SERVICES: ServiceData[] = [
       effect:
         "브랜드에 대한 호기심을 자극하여 자발적인 인바운드 고객 증대 — 정보 저장, 가볼만한 장소, '가서 이거 사야지' 하는 콘텐츠",
       videoUrls: [
-        "https://www.instagram.com/reel/DZO32cqSIJW/embed/captioned/",
-        "https://www.instagram.com/reel/DVIKGv5k3Ia/embed/captioned/",
+        "https://www.instagram.com/reel/DZO32cqSIJW/embed/",
+        "https://www.instagram.com/reel/DVIKGv5k3Ia/embed/",
         "https://www.tiktok.com/embed/v2/7640331701192871189",
       ],
     },
@@ -95,7 +95,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "https://www.instagram.com/reel/DZsStHcB-dj/embed/captioned/",
+              url: "https://www.instagram.com/reel/DZsStHcB-dj/embed/",
               brandTag: "헬스 / 건강기능식품",
               brandName: "B사",
               challenge: "신규 국가 진입 초기, 소비자 신뢰 기반 부재",
@@ -129,7 +129,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "https://www.instagram.com/reel/DaXZG26NHSh/embed/captioned/",
+              url: "https://www.instagram.com/reel/DaXZG26NHSh/embed/",
               brandTag: "뷰티 / 메이크업",
               brandName: "C사",
               challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
@@ -163,7 +163,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "https://www.instagram.com/p/DZ99OkNqyi_/embed/captioned/",
+              url: "https://www.instagram.com/p/DZ99OkNqyi_/embed/",
               brandTag: "뷰티 / 웰니스",
               brandName: "F사",
               challenge: "글로벌 시장 대규모 노출 및 단기 매출 증대 목표",
@@ -195,8 +195,8 @@ const SERVICES: ServiceData[] = [
       effect:
         "제품의 효능과 브랜드에 대한 소비자의 절대적인 신뢰도 확보",
       videoUrls: [
-        "https://www.instagram.com/reel/DYq3zKax3Z7/embed/captioned/",
-        "https://www.instagram.com/reel/DUaXZRVE53V/embed/captioned/",
+        "https://www.instagram.com/reel/DYq3zKax3Z7/embed/",
+        "https://www.instagram.com/reel/DUaXZRVE53V/embed/",
       ],
     },
   },
