@@ -142,6 +142,7 @@ const SERVICES: ServiceData[] = [
               metrics: [
                 { label: "중동 시장 진출", value: "성공" },
                 { label: "초도 물량", value: "완판" },
+                { label: "월매출", value: "0 → 20억" },
               ],
             },
             {
@@ -739,7 +740,7 @@ export default function LoginPage() {
                               {/* 오른쪽 설명 — 첫 번째 영상 기준 1개만 */}
                               {(tier.videos ?? []).slice(0, 1).map((video, j) => (
                                 <div key={j} style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ marginBottom: "88px" }}>
+                                  <div style={{ marginBottom: "72px" }}>
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Challenge</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
                                   </div>
@@ -747,11 +748,11 @@ export default function LoginPage() {
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Outcome</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.outcome}</p>
                                   </div>
-                                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
                                     {video.metrics.map((m, k) => (
-                                      <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "12px", padding: "14px 20px" }}>
-                                        <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.08em", marginBottom: "6px" }}>{m.label}</p>
-                                        <p style={{ fontSize: "22px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>{m.value}</p>
+                                      <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px 28px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)", minWidth: "120px" }}>
+                                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.1em", marginBottom: "10px", textTransform: "uppercase" }}>{m.label}</p>
+                                        <p style={{ fontSize: "28px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{m.value}</p>
                                       </div>
                                     ))}
                                   </div>
