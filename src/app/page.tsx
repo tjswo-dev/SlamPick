@@ -128,7 +128,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "https://www.tiktok.com/embed/v2/7489487595861200146",
+              url: "https://www.tiktok.com/embed/v2/7645253106598546708",
               brandTag: "라이프스타일 / 이커머스",
               brandName: "D사",
               challenge: "브랜드 신뢰도 부족으로 인한 이탈율 증가",
