@@ -652,12 +652,12 @@ export default function LoginPage() {
                             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: "28px", wordBreak: "keep-all" }}>
                               {tier.features.join("  ·  ")}
                             </p>
-                            {/* Video cards */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                            {/* Video cards — 2개 가로 배치 */}
+                            <div style={{ display: "flex", gap: "16px" }}>
                               {(tier.videos ?? []).map((video, j) => (
-                                <div key={j} style={{ display: "flex", gap: "40px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "28px 32px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                <div key={j} style={{ flex: 1, minWidth: 0, display: "flex", gap: "20px", alignItems: "flex-start", backgroundColor: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "24px", border: "1px solid rgba(255,255,255,0.07)" }}>
                                   {/* Phone mockup */}
-                                  <div style={{ width: "210px", height: "375px", borderRadius: "24px", border: "5px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <div style={{ width: "150px", height: "266px", borderRadius: "18px", border: "4px solid rgba(255,255,255,0.1)", overflow: "hidden", flexShrink: 0, backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                     {video.url ? (
                                       <iframe
                                         src={video.url}
@@ -666,35 +666,35 @@ export default function LoginPage() {
                                         allowFullScreen
                                       />
                                     ) : (
-                                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                                        <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                          <span style={{ fontSize: "14px", marginLeft: "2px", color: "rgba(255,255,255,0.3)" }}>▶</span>
+                                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <span style={{ fontSize: "12px", marginLeft: "2px", color: "rgba(255,255,255,0.3)" }}>▶</span>
                                         </div>
-                                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", fontWeight: "500" }}>영상 준비중</p>
+                                        <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.2)", fontWeight: "500" }}>영상 준비중</p>
                                       </div>
                                     )}
                                   </div>
                                   {/* Content */}
-                                  <div style={{ flex: 1, paddingTop: "4px" }}>
-                                    <span style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <span style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
                                       {video.brandTag}
                                     </span>
-                                    <h4 style={{ fontSize: "28px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "8px", marginBottom: "28px" }}>
+                                    <h4 style={{ fontSize: "22px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "6px", marginBottom: "20px" }}>
                                       {video.brandName}
                                     </h4>
-                                    <div style={{ marginBottom: "16px" }}>
-                                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Challenge</p>
-                                      <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
+                                    <div style={{ marginBottom: "12px" }}>
+                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "5px" }}>Challenge</p>
+                                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.challenge}</p>
                                     </div>
-                                    <div style={{ marginBottom: "28px" }}>
-                                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Solution</p>
-                                      <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.solution}</p>
+                                    <div style={{ marginBottom: "20px" }}>
+                                      <p style={{ fontSize: "9px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "5px" }}>Solution</p>
+                                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, wordBreak: "keep-all" }}>{video.solution}</p>
                                     </div>
-                                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                                       {video.metrics.map((m, k) => (
-                                        <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "12px", padding: "14px 20px", minWidth: "110px" }}>
-                                          <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.08em", marginBottom: "6px" }}>{m.label}</p>
-                                          <p style={{ fontSize: "22px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>{m.value}</p>
+                                        <div key={k} style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: "10px", padding: "10px 14px" }}>
+                                          <p style={{ fontSize: "9px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.08em", marginBottom: "4px" }}>{m.label}</p>
+                                          <p style={{ fontSize: "18px", fontWeight: "800", color: "#fff", letterSpacing: "-0.02em" }}>{m.value}</p>
                                         </div>
                                       ))}
                                     </div>
