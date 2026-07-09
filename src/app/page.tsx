@@ -596,36 +596,20 @@ export default function LoginPage() {
                   borderTop: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                {/* Header — seeding: 2-column (title left, description right) */}
-                {svc.id === "seeding" ? (
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: "64px", marginBottom: "52px" }}>
-                    <div style={{ flexShrink: 0 }}>
-                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
-                        {svc.tag} · {svc.titleEn}
-                      </p>
-                      <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                        {svc.title}
-                      </h2>
-                    </div>
-                    <p style={{ flex: 1, fontSize: "15px", color: "rgba(255,255,255,0.55)", lineHeight: 1.85, wordBreak: "keep-all", paddingBottom: "4px" }}>
-                      {svc.detail.description}
+                {/* Header */}
+                <>
+                  <div style={{ marginBottom: "52px" }}>
+                    <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
+                      {svc.tag} · {svc.titleEn}
                     </p>
+                    <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                      {svc.title}
+                    </h2>
                   </div>
-                ) : (
-                  <>
-                    <div style={{ marginBottom: "52px" }}>
-                      <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "14px" }}>
-                        {svc.tag} · {svc.titleEn}
-                      </p>
-                      <h2 style={{ fontSize: "clamp(36px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                        {svc.title}
-                      </h2>
-                    </div>
-                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
-                      {svc.detail.description}
-                    </p>
-                  </>
-                )}
+                  <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.68)", lineHeight: 1.9, maxWidth: "800px", marginBottom: "56px", wordBreak: "keep-all", whiteSpace: "pre-line" }}>
+                    {svc.detail.description}
+                  </p>
+                </>
 
                 {/* Key points */}
                 {svc.detail.points.length > 0 && (
