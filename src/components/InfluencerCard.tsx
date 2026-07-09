@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Play, Camera, Music, Users, Calendar } from "lucide-react";
 import { Campaign } from "@/lib/types";
@@ -54,6 +55,8 @@ export default function InfluencerCard({
   const country = countryInfo[campaign.country];
   const availableCount = slots.filter((s) => s.status === "available").length;
   const shootingMonth = campaign.shootingDate.slice(0, 7);
+  const [showSlotPicker, setShowSlotPicker] = useState(false);
+  const availableSlots = slots.filter((s) => s.status === "available");
 
   return (
     <div
@@ -275,35 +278,81 @@ export default function InfluencerCard({
 
       {/* ── CTA ── */}
       <div style={{ padding: "0 16px 16px" }}>
-        <button
-          onClick={() => {
-            const first = slots.find((s) => s.status === "available") ?? slots[0];
-            if (first) onSlotClick(campaign.id, first.id);
-          }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: availableCount > 0 ? "#111" : "transparent",
-            border: availableCount > 0 ? "none" : "1px solid #e5e7eb",
-            borderRadius: "8px",
-            color: availableCount > 0 ? "#fff" : "#9ca3af",
-            fontSize: "13px",
-            fontWeight: "600",
-            cursor: "pointer",
-            letterSpacing: "0.02em",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            if (availableCount > 0) e.currentTarget.style.backgroundColor = "#374151";
-            else { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#6b7280"; }
-          }}
-          onMouseLeave={(e) => {
-            if (availableCount > 0) e.currentTarget.style.backgroundColor = "#111";
-            else { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }
-          }}
-        >
-          {availableCount > 0 ? "탑승 신청 →" : "콘텐츠 가이드 보기"}
-        </button>
+        {showSlotPicker && availableCount > 0 ? (
+          <div>
+            <p style={{ fontSize: "11px", color: "#6b7280", fontWeight: "600", letterSpacing: "0.06em", marginBottom: "8px" }}>
+              슬롯 선택
+            </p>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+              {availableSlots.map((slot) => (
+                <button
+                  key={slot.id}
+                  onClick={() => { setShowSlotPicker(false); onSlotClick(campaign.id, slot.id); }}
+                  style={{
+                    flex: 1,
+                    minWidth: "64px",
+                    padding: "10px 8px",
+                    backgroundColor: "#f0fdf4",
+                    border: "1.5px solid #86efac",
+                    borderRadius: "8px",
+                    color: "#15803d",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                    textAlign: "center",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#dcfce7"; e.currentTarget.style.borderColor = "#4ade80"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#f0fdf4"; e.currentTarget.style.borderColor = "#86efac"; }}
+                >
+                  슬롯 #{slot.id}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowSlotPicker(false)}
+              style={{ width: "100%", padding: "9px", backgroundColor: "transparent", border: "1px solid #e5e7eb", borderRadius: "8px", color: "#9ca3af", fontSize: "12px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#6b7280"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }}
+            >
+              취소
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              if (availableCount > 0) {
+                setShowSlotPicker(true);
+              } else {
+                const first = slots[0];
+                if (first) onSlotClick(campaign.id, first.id);
+              }
+            }}
+            style={{
+              width: "100%",
+              padding: "12px",
+              backgroundColor: availableCount > 0 ? "#111" : "transparent",
+              border: availableCount > 0 ? "none" : "1px solid #e5e7eb",
+              borderRadius: "8px",
+              color: availableCount > 0 ? "#fff" : "#9ca3af",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+              letterSpacing: "0.02em",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (availableCount > 0) e.currentTarget.style.backgroundColor = "#374151";
+              else { e.currentTarget.style.borderColor = "#9ca3af"; e.currentTarget.style.color = "#6b7280"; }
+            }}
+            onMouseLeave={(e) => {
+              if (availableCount > 0) e.currentTarget.style.backgroundColor = "#111";
+              else { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }
+            }}
+          >
+            {availableCount > 0 ? "탑승 신청 →" : "콘텐츠 가이드 보기"}
+          </button>
+        )}
       </div>
     </div>
   );
