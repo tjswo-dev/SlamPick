@@ -117,7 +117,7 @@ const SERVICES: ServiceData[] = [
             "브랜드의 2차 마케팅 활용 소재로 사용하기에 가장 적합한 고효율 그룹",
           videos: [
             {
-              url: "",
+              url: "https://www.instagram.com/reel/DXhsgQojUgy/embed/captioned/",
               brandTag: "뷰티 / 메이크업",
               brandName: "C사",
               challenge: "2차 마케팅 소재 부족 및 구매 전환율 정체",
@@ -128,7 +128,7 @@ const SERVICES: ServiceData[] = [
               ],
             },
             {
-              url: "",
+              url: "https://www.tiktok.com/embed/v2/7489487595861200146",
               brandTag: "라이프스타일 / 이커머스",
               brandName: "D사",
               challenge: "브랜드 신뢰도 부족으로 인한 이탈율 증가",
