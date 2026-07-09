@@ -645,7 +645,7 @@ export default function LoginPage() {
                               <span style={{ fontSize: "22px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em" }}>{tier.level}</span>
                             </div>
                             {/* Features */}
-                            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: "28px", wordBreak: "keep-all" }}>
+                            <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.7)", lineHeight: 1.8, marginBottom: "28px", wordBreak: "keep-all" }}>
                               {tier.features.join("  ·  ")}
                             </p>
                             {/* Video cards — [영상] [영상] [설명 1개] */}
@@ -677,19 +677,19 @@ export default function LoginPage() {
                               {/* 오른쪽 설명 — 첫 번째 영상 기준 1개만 */}
                               {(tier.videos ?? []).slice(0, 1).map((video, j) => (
                                 <div key={j} style={{ flex: 1, minWidth: 0 }}>
-                                  <span style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                                  <span style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.5)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
                                     {video.brandTag}
                                   </span>
                                   <h4 style={{ fontSize: "26px", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, marginTop: "8px", marginBottom: "28px" }}>
                                     {video.brandName}
                                   </h4>
                                   <div style={{ marginBottom: "16px" }}>
-                                    <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Challenge</p>
-                                    <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
+                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Challenge</p>
+                                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
                                   </div>
                                   <div style={{ marginBottom: "28px" }}>
-                                    <p style={{ fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Solution</p>
-                                    <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.solution}</p>
+                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "6px" }}>Solution</p>
+                                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.solution}</p>
                                   </div>
                                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                                     {video.metrics.map((m, k) => (
