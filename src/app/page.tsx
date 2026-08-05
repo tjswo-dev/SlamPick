@@ -238,6 +238,7 @@ export default function LoginPage() {
   const [servicesExpanded, setServicesExpanded] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ email: string } | null>(null);
   const [showCTA, setShowCTA] = useState(false);
+  const [logoExpanded, setLogoExpanded] = useState(false);
 
   const [applyBrand, setApplyBrand] = useState("");
   const [applyManager, setApplyManager] = useState("");
@@ -350,6 +351,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: "center" }}>
           <h1
+            onClick={() => setLogoExpanded((v) => !v)}
             style={{
               fontSize: "clamp(48px, 10vw, 96px)",
               fontWeight: "900",
@@ -357,7 +359,12 @@ export default function LoginPage() {
               letterSpacing: "-0.04em",
               lineHeight: "1",
               fontFamily: "system-ui, -apple-system, sans-serif",
+              cursor: "pointer",
+              transition: "opacity 0.2s",
+              userSelect: "none",
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.75"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           >
             SLAM PICK
           </h1>
@@ -368,11 +375,11 @@ export default function LoginPage() {
           <div
             style={{
               marginTop: "16px",
-              width: heroAnimated ? "100vw" : "clamp(280px, 45vw, 460px)",
+              width: (heroAnimated || logoExpanded) ? "100vw" : "clamp(280px, 45vw, 460px)",
               height: "2px",
               background: "linear-gradient(90deg, transparent, #fff, transparent)",
               transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.9s ease",
-              boxShadow: heroAnimated
+              boxShadow: (heroAnimated || logoExpanded)
                 ? "0 0 12px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.7), 0 0 100px rgba(255,255,255,0.25)"
                 : "none",
             }}
@@ -384,7 +391,7 @@ export default function LoginPage() {
               left: "50%",
               transform: "translateX(-50%)",
               width: "100vw",
-              height: heroAnimated ? "55vh" : "0",
+              height: (heroAnimated || logoExpanded) ? "55vh" : "0",
               background: "linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)",
               transition: "height 1.4s ease 0.15s",
               pointerEvents: "none",
@@ -392,7 +399,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 서비스 소개 CTA */}
+        {/* 히어로 중앙 영역 */}
         <div
           style={{
             position: "relative",
@@ -403,26 +410,87 @@ export default function LoginPage() {
             marginTop: "48px",
           }}
         >
-          <button
-            onClick={scrollToServices}
-            style={{
-              width: "100%",
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.3)",
-              color: "#fff",
-              padding: "14px",
-              fontSize: "14px",
-              fontWeight: "500",
-              letterSpacing: "0.15em",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              textTransform: "uppercase",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
-          >
-            서비스 소개 ↓
-          </button>
+          {logoExpanded ? (
+            /* ── 로그인 / 대시보드 ── */
+            loggedInUser ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", animation: "fadeSlideIn 0.5s ease both" }}>
+                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textAlign: "center", letterSpacing: "0.04em" }}>
+                  {loggedInUser.email}
+                </p>
+                <button
+                  onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
+                  style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
+                >
+                  대시보드로 이동 →
+                </button>
+                <button
+                  onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); setLogoExpanded(false); }}
+                  style={{ width: "100%", background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", padding: "8px", fontSize: "12px", cursor: "pointer", transition: "color 0.2s", letterSpacing: "0.08em" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleLogin}
+                style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeSlideIn 0.5s ease both" }}
+              >
+                <input
+                  type="email"
+                  placeholder="이메일"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                <input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                {error && <p style={{ fontSize: "13px", color: "#f87171", textAlign: "center" }}>{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ marginTop: "4px", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: loading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: loading ? 0.5 : 1 }}
+                  onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; } }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
+                >
+                  {loading ? "로그인 중..." : "Log In"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/signup")}
+                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px", transition: "color 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                >
+                  계정이 없으신가요? 회원가입
+                </button>
+              </form>
+            )
+          ) : (
+            /* ── 서비스 소개 버튼 ── */
+            <button
+              onClick={scrollToServices}
+              style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
+            >
+              서비스 소개 ↓
+            </button>
+          )}
         </div>
 
 
