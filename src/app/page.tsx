@@ -31,6 +31,11 @@ interface ServiceData {
     effect: string;
     tiers?: ServiceTier[];
     videoUrls?: string[];
+    subCategories?: {
+      title: string;
+      description: string;
+      videoUrls?: string[];
+    }[];
   };
 }
 
@@ -38,7 +43,7 @@ const SERVICES: ServiceData[] = [
   {
     id: "visit",
     tag: "01",
-    title: "방문형 콘텐츠",
+    title: "OWM 방문형 콘텐츠",
     titleEn: "Location-Based Content",
     summary: "축제, 약국, 병의원 등 오프라인 현장에 직접 방문하여 제품과 브랜드에 대한 생생한 경험을 콘텐츠로 제작·전달합니다.",
     detail: {
@@ -172,9 +177,22 @@ const SERVICES: ServiceData[] = [
       ],
       effect:
         "제품의 효능과 브랜드에 대한 소비자의 절대적인 신뢰도 확보",
-      videoUrls: [
-        "https://www.instagram.com/reel/DYq3zKax3Z7/embed/",
-        "https://www.instagram.com/reel/DUaXZRVE53V/embed/",
+      subCategories: [
+        {
+          title: "약사 추천 콘텐츠",
+          description:
+            "약국 및 약사 채널을 통해 제품의 성분·효능을 팩트 기반으로 전달합니다. 전문가의 직접 추천으로 소비자의 구매 결정을 강하게 이끌어냅니다.",
+          videoUrls: [
+            "https://www.instagram.com/reel/DYq3zKax3Z7/embed/",
+            "https://www.instagram.com/reel/DUaXZRVE53V/embed/",
+          ],
+        },
+        {
+          title: "피부과 연계형 콘텐츠",
+          description:
+            "피부과 전문의 및 의원 채널과 협업하여 스킨케어·더마 코스메틱 제품의 성분과 효능을 의학적 관점에서 검증하고 콘텐츠로 제작합니다.",
+          videoUrls: [],
+        },
       ],
     },
   },
@@ -744,9 +762,13 @@ export default function LoginPage() {
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Challenge</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.challenge}</p>
                                   </div>
-                                  <div style={{ marginBottom: "144px" }}>
+                                  <div style={{ marginBottom: "48px" }}>
                                     <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>Outcome</p>
                                     <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{video.outcome}</p>
+                                  </div>
+                                  <div style={{ marginBottom: "48px" }}>
+                                    <p style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: "8px" }}>기대 효과</p>
+                                    <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.82)", lineHeight: 1.75, wordBreak: "keep-all" }}>{tier.effect}</p>
                                   </div>
                                   <div style={{ display: "flex", justifyContent: "center" }}>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
@@ -801,8 +823,57 @@ export default function LoginPage() {
                   </div>
                 )}
 
+                {/* Sub-categories (e.g. 신뢰형 콘텐츠 내 약사추천 / 피부과 연계) */}
+                {svc.detail.subCategories && svc.detail.subCategories.length > 0 && (
+                  <div style={{ marginBottom: "56px" }}>
+                    {svc.detail.subCategories.map((sub, si) => (
+                      <div key={si} style={{ marginBottom: si < svc.detail.subCategories!.length - 1 ? "56px" : 0 }}>
+                        {/* 중제목 */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                          <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.15)", color: "#fff", padding: "4px 14px", borderRadius: "20px", letterSpacing: "0.1em" }}>
+                            0{si + 1}
+                          </span>
+                          <h4 style={{ fontSize: "22px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", margin: 0 }}>
+                            {sub.title}
+                          </h4>
+                        </div>
+                        <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.65)", lineHeight: 1.85, marginBottom: "24px", wordBreak: "keep-all" }}>
+                          {sub.description}
+                        </p>
+                        {/* 영상 */}
+                        {sub.videoUrls && sub.videoUrls.length > 0 ? (
+                          <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap", justifyContent: "center" }}>
+                            {sub.videoUrls.map((url, vi) => {
+                              const vw = sub.videoUrls!.length >= 3 ? "330px" : "400px";
+                              const vh = sub.videoUrls!.length >= 3 ? "640px" : "780px";
+                              return (
+                                <div key={vi} style={{ width: vw, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
+                                  <iframe
+                                    src={url}
+                                    style={{ width: vw, height: vh, border: "none", display: "block" }}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div style={{ height: "180px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+                            <span style={{ fontSize: "20px", color: "rgba(255,255,255,0.15)" }}>▶</span>
+                            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.28)", fontWeight: "500" }}>레퍼런스 영상이 곧 추가됩니다</p>
+                          </div>
+                        )}
+                        {si < svc.detail.subCategories!.length - 1 && (
+                          <div style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.07)", marginTop: "56px" }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Video */}
-                {svc.id !== "seeding" && <div style={{ marginBottom: "56px" }}>
+                {svc.id !== "seeding" && !svc.detail.subCategories && <div style={{ marginBottom: "56px" }}>
                   <SectionLabel dark>레퍼런스 영상</SectionLabel>
                   <div style={{ marginTop: "20px" }}>
                     {svc.detail.videoUrls && svc.detail.videoUrls.length > 0 ? (
@@ -834,7 +905,7 @@ export default function LoginPage() {
                   </div>
                 </div>}
 
-                {/* Expected outcome */}
+                {/* Expected outcome (subCategories가 있을 때도 표시) */}
                 <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
                     Expected Outcome
