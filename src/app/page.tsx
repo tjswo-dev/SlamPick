@@ -478,40 +478,6 @@ export default function LoginPage() {
         </div>
 
 
-        {/* 서비스 소개 ↓ — bottom of hero */}
-        <button
-          onClick={scrollToServices}
-          style={{
-            position: "absolute",
-            bottom: "44px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            animation: "bounce 2.4s ease-in-out infinite",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "7px",
-            padding: "8px 20px",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget.querySelector(".svc-label") as HTMLElement).style.color = "rgba(255,255,255,0.9)";
-            (e.currentTarget.querySelector(".svc-arrow") as HTMLElement).style.color = "rgba(255,255,255,0.9)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget.querySelector(".svc-label") as HTMLElement).style.color = "rgba(255,255,255,0.35)";
-            (e.currentTarget.querySelector(".svc-arrow") as HTMLElement).style.color = "rgba(255,255,255,0.35)";
-          }}
-        >
-          <span className="svc-label" style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.18em", color: "rgba(255,255,255,0.35)", transition: "color 0.2s", textTransform: "uppercase" }}>
-            서비스 소개
-          </span>
-          <span className="svc-arrow" style={{ fontSize: "14px", color: "rgba(255,255,255,0.35)", transition: "color 0.2s", lineHeight: 1 }}>
-            ↓
-          </span>
-        </button>
       </section>
 
       {/* ── GRADIENT TRANSITION ── */}
