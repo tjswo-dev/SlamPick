@@ -229,7 +229,7 @@ export default function LoginPage() {
   const servicesRef = useRef<HTMLDivElement>(null);
   const slamPickHeadingRef = useRef<HTMLDivElement>(null);
 
-  const [expanded, setExpanded] = useState(false);
+  const [heroAnimated, setHeroAnimated] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -237,6 +237,7 @@ export default function LoginPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [servicesExpanded, setServicesExpanded] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ email: string } | null>(null);
+  const [showCTA, setShowCTA] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,8 +259,9 @@ export default function LoginPage() {
   };
 
   const scrollToServices = () => {
+    setHeroAnimated(true);
     setServicesExpanded(true);
-    servicesRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => servicesRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
   };
 
   useEffect(() => {
@@ -339,11 +341,11 @@ export default function LoginPage() {
           <div
             style={{
               marginTop: "16px",
-              width: expanded ? "100vw" : "clamp(280px, 45vw, 460px)",
+              width: heroAnimated ? "100vw" : "clamp(280px, 45vw, 460px)",
               height: "2px",
               background: "linear-gradient(90deg, transparent, #fff, transparent)",
               transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.9s ease",
-              boxShadow: expanded
+              boxShadow: heroAnimated
                 ? "0 0 12px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.7), 0 0 100px rgba(255,255,255,0.25)"
                 : "none",
             }}
@@ -355,7 +357,7 @@ export default function LoginPage() {
               left: "50%",
               transform: "translateX(-50%)",
               width: "100vw",
-              height: expanded ? "55vh" : "0",
+              height: heroAnimated ? "55vh" : "0",
               background: "linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)",
               transition: "height 1.4s ease 0.15s",
               pointerEvents: "none",
@@ -363,7 +365,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Login area */}
+        {/* 서비스 소개 CTA */}
         <div
           style={{
             position: "relative",
@@ -374,108 +376,26 @@ export default function LoginPage() {
             marginTop: "48px",
           }}
         >
-          {loggedInUser ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", animation: "fadeSlideIn 0.5s ease both" }}>
-              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textAlign: "center", letterSpacing: "0.04em" }}>
-                {loggedInUser.email}
-              </p>
-              <button
-                onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
-                style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
-              >
-                대시보드로 이동 →
-              </button>
-              <button
-                onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); }}
-                style={{ width: "100%", background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", padding: "8px", fontSize: "12px", cursor: "pointer", transition: "color 0.2s", letterSpacing: "0.08em" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
-              >
-                로그아웃
-              </button>
-            </div>
-          ) : !expanded ? (
-            <button
-              onClick={() => setExpanded(true)}
-              style={{
-                width: "100%",
-                background: "transparent",
-                border: "1px solid rgba(255,255,255,0.3)",
-                color: "#fff",
-                padding: "14px",
-                fontSize: "14px",
-                fontWeight: "500",
-                letterSpacing: "0.15em",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                textTransform: "uppercase",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
-            >
-              Log In
-            </button>
-          ) : (
-            <form
-              onSubmit={handleLogin}
-              style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeSlideIn 0.6s ease 0.5s both" }}
-            >
-              <input
-                type="email"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
-              />
-              <input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
-              />
-              {error && <p style={{ fontSize: "13px", color: "#f87171", textAlign: "center" }}>{error}</p>}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  marginTop: "4px",
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  color: "#fff",
-                  padding: "14px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  letterSpacing: "0.15em",
-                  cursor: loading ? "default" : "pointer",
-                  transition: "all 0.2s ease",
-                  textTransform: "uppercase",
-                  opacity: loading ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; } }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
-              >
-                {loading ? "로그인 중..." : "Log In"}
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/signup")}
-                style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px", transition: "color 0.2s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-              >
-                계정이 없으신가요? 회원가입
-              </button>
-            </form>
-          )}
+          <button
+            onClick={scrollToServices}
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.3)",
+              color: "#fff",
+              padding: "14px",
+              fontSize: "14px",
+              fontWeight: "500",
+              letterSpacing: "0.15em",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              textTransform: "uppercase",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
+          >
+            서비스 소개 ↓
+          </button>
         </div>
 
 
@@ -920,6 +840,97 @@ export default function LoginPage() {
               </div>
             );
           })()}
+        </div>
+
+        {/* ── 마케팅 신청하기 CTA ── */}
+        <div style={{ maxWidth: "1280px", margin: "80px auto 0", animation: servicesExpanded ? "expandDown 0.8s ease 1.2s both" : "none", display: servicesExpanded ? "block" : "none" }}>
+          <div style={{ backgroundColor: "#111", borderRadius: "24px", padding: "72px 80px", textAlign: "center" }}>
+            <p style={{ fontSize: "11px", fontWeight: "700", color: "rgba(255,255,255,0.3)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "20px" }}>
+              Ready to Start
+            </p>
+            <h3 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: "16px" }}>
+              마케팅 신청하기
+            </h3>
+            <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, marginBottom: "48px", wordBreak: "keep-all" }}>
+              슬롯을 확인하고 브랜드에 맞는 인플루언서를 지금 바로 신청하세요.
+            </p>
+
+            {loggedInUser ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", animation: "fadeSlideIn 0.5s ease both" }}>
+                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>{loggedInUser.email}</p>
+                <button
+                  onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
+                  style={{ background: "#fff", border: "none", color: "#000", padding: "16px 48px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase", borderRadius: "2px" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
+                >
+                  대시보드로 이동 →
+                </button>
+                <button
+                  onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); }}
+                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "12px", cursor: "pointer", padding: "4px", transition: "color 0.2s", letterSpacing: "0.08em" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.25)"; }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : !showCTA ? (
+              <button
+                onClick={() => setShowCTA(true)}
+                style={{ background: "#fff", border: "none", color: "#000", padding: "16px 48px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase", borderRadius: "2px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
+              >
+                로그인 / 시작하기 →
+              </button>
+            ) : (
+              <form
+                onSubmit={handleLogin}
+                style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "360px", margin: "0 auto", animation: "fadeSlideIn 0.5s ease both" }}
+              >
+                <input
+                  type="email"
+                  placeholder="이메일"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                <input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                {error && <p style={{ fontSize: "13px", color: "#f87171", textAlign: "center" }}>{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ marginTop: "4px", background: "#fff", border: "none", color: "#000", padding: "14px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: loading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: loading ? 0.6 : 1, borderRadius: "2px" }}
+                  onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
+                >
+                  {loading ? "로그인 중..." : "Log In →"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/signup")}
+                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px", transition: "color 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                >
+                  계정이 없으신가요? 회원가입
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 
