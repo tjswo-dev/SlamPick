@@ -239,6 +239,14 @@ export default function LoginPage() {
   const [loggedInUser, setLoggedInUser] = useState<{ email: string } | null>(null);
   const [showCTA, setShowCTA] = useState(false);
 
+  const [applyBrand, setApplyBrand] = useState("");
+  const [applyManager, setApplyManager] = useState("");
+  const [applyEmail, setApplyEmail] = useState("");
+  const [applyPhone, setApplyPhone] = useState("");
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyError, setApplyError] = useState("");
+  const [applyDone, setApplyDone] = useState(false);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -256,6 +264,25 @@ export default function LoginPage() {
       return;
     }
     router.push(data.user?.email === "admin@slam-global.com" ? "/admin" : "/dashboard");
+  };
+
+  const handleApply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setApplyError("");
+    setApplyLoading(true);
+    const res = await fetch("/api/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ brand: applyBrand, manager: applyManager, email: applyEmail, phone: applyPhone }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setApplyError(data.error ?? "오류가 발생했습니다. 다시 시도해주세요.");
+      setApplyLoading(false);
+      return;
+    }
+    setApplyDone(true);
+    setApplyLoading(false);
   };
 
   const scrollToServices = () => {
@@ -855,25 +882,11 @@ export default function LoginPage() {
               슬롯을 확인하고 브랜드에 맞는 인플루언서를 지금 바로 신청하세요.
             </p>
 
-            {loggedInUser ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", animation: "fadeSlideIn 0.5s ease both" }}>
-                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>{loggedInUser.email}</p>
-                <button
-                  onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
-                  style={{ background: "#fff", border: "none", color: "#000", padding: "16px 48px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase", borderRadius: "2px" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
-                >
-                  대시보드로 이동 →
-                </button>
-                <button
-                  onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); }}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: "12px", cursor: "pointer", padding: "4px", transition: "color 0.2s", letterSpacing: "0.08em" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.25)"; }}
-                >
-                  로그아웃
-                </button>
+            {applyDone ? (
+              <div style={{ animation: "fadeSlideIn 0.5s ease both", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+                <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>✓</div>
+                <p style={{ fontSize: "20px", fontWeight: "700", color: "#fff" }}>신청이 완료되었습니다</p>
+                <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>빠른 시일 내에 담당자가 연락드리겠습니다.</p>
               </div>
             ) : !showCTA ? (
               <button
@@ -882,51 +895,62 @@ export default function LoginPage() {
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
               >
-                로그인 / 시작하기 →
+                신청하기 →
               </button>
             ) : (
               <form
-                onSubmit={handleLogin}
-                style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "360px", margin: "0 auto", animation: "fadeSlideIn 0.5s ease both" }}
+                onSubmit={handleApply}
+                style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px", margin: "0 auto", animation: "fadeSlideIn 0.5s ease both" }}
               >
+                <input
+                  type="text"
+                  placeholder="브랜드명"
+                  value={applyBrand}
+                  onChange={(e) => setApplyBrand(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                <input
+                  type="text"
+                  placeholder="담당자명"
+                  value={applyManager}
+                  onChange={(e) => setApplyManager(e.target.value)}
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
                 <input
                   type="email"
                   placeholder="이메일"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={applyEmail}
+                  onChange={(e) => setApplyEmail(e.target.value)}
                   required
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
                 />
                 <input
-                  type="password"
-                  placeholder="비밀번호"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  type="tel"
+                  placeholder="전화번호"
+                  value={applyPhone}
+                  onChange={(e) => setApplyPhone(e.target.value)}
                   required
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
                 />
-                {error && <p style={{ fontSize: "13px", color: "#f87171", textAlign: "center" }}>{error}</p>}
+                {applyError && <p style={{ fontSize: "13px", color: "#f87171", textAlign: "center" }}>{applyError}</p>}
                 <button
                   type="submit"
-                  disabled={loading}
-                  style={{ marginTop: "4px", background: "#fff", border: "none", color: "#000", padding: "14px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: loading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: loading ? 0.6 : 1, borderRadius: "2px" }}
-                  onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
+                  disabled={applyLoading}
+                  style={{ marginTop: "4px", background: "#fff", border: "none", color: "#000", padding: "15px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: applyLoading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: applyLoading ? 0.6 : 1, borderRadius: "2px" }}
+                  onMouseEnter={(e) => { if (!applyLoading) e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
                 >
-                  {loading ? "로그인 중..." : "Log In →"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push("/signup")}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px", transition: "color 0.2s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-                >
-                  계정이 없으신가요? 회원가입
+                  {applyLoading ? "전송 중..." : "신청서 보내기 →"}
                 </button>
               </form>
             )}
