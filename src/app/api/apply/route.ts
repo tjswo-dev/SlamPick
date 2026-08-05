@@ -1,9 +1,10 @@
-import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const { brand, manager, email, phone } = await req.json();
 
   if (!brand || !manager || !email || !phone) {
