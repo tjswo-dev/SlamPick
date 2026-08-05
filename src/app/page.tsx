@@ -921,14 +921,14 @@ export default function LoginPage() {
           })()}
         </div>
 
-        {/* ── 마케팅 신청하기 CTA ── */}
+        {/* ── 입점 문의 및 마케팅 신청하기 CTA ── */}
         <div style={{ maxWidth: "1280px", margin: "80px auto 0", animation: servicesExpanded ? "expandDown 0.8s ease 1.2s both" : "none", display: servicesExpanded ? "block" : "none" }}>
           <div style={{ backgroundColor: "#111", borderRadius: "24px", padding: "72px 80px", textAlign: "center" }}>
             <p style={{ fontSize: "11px", fontWeight: "700", color: "rgba(255,255,255,0.3)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "20px" }}>
               Ready to Start
             </p>
             <h3 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: "900", color: "#fff", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: "16px" }}>
-              마케팅 신청하기
+              입점 문의 및 마케팅 신청하기
             </h3>
             <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, marginBottom: "48px", wordBreak: "keep-all" }}>
               슬롯을 확인하고 브랜드에 맞는 인플루언서를 지금 바로 신청하세요.
