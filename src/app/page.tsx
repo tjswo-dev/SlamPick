@@ -632,13 +632,13 @@ export default function LoginPage() {
                     {service.tag}
                   </span>
                   <h3 style={{
-                    fontSize: hasActive ? "15px" : "30px",
+                    fontSize: hasActive ? "15px" : "clamp(18px, 1.8vw, 28px)",
                     fontWeight: "800",
                     color: "#fff",
                     letterSpacing: "-0.03em",
                     lineHeight: 1.2,
                     transition: "font-size 0.3s ease",
-                    whiteSpace: hasActive ? "nowrap" : "normal",
+                    whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     flexShrink: 0,
