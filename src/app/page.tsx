@@ -43,7 +43,7 @@ const SERVICES: ServiceData[] = [
   {
     id: "visit",
     tag: "01",
-    title: "OWM 방문형 콘텐츠",
+    title: "OWM 방문 콘텐츠",
     titleEn: "Location-Based Content",
     summary: "OWM 약국을 직접 방문해 브랜드 제품을 '여기서 꼭 사야 하는 필수템'으로 소개합니다. 매장 공간의 신뢰감과 제품을 함께 담아 자발적인 방문 욕구를 만들어냅니다.",
     detail: {
