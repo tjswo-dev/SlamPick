@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "이메일 발송에 실패했습니다." }, { status: 500 });
+    return NextResponse.json({ error: error.message ?? "이메일 발송에 실패했습니다." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
