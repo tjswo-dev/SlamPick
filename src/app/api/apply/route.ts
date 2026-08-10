@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await resend.emails.send({
     from: "SLAM PICK <onboarding@resend.dev>",
-    to: ["tjswo@slam-global.com", "jhw@slam-global.com"],
+    to: "tjswo@slam-global.com",
     subject: `[마케팅 신청] ${brand}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px; color: #111;">
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message ?? "이메일 발송에 실패했습니다." }, { status: 500 });
+    return NextResponse.json({ error: "이메일 발송에 실패했습니다." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
