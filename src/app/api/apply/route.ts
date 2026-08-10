@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const { brand, manager, email, phone } = await req.json();
+  const { brand, manager, email, phone, owmBudget } = await req.json();
 
   if (!brand || !manager || !email || !phone) {
     return NextResponse.json({ error: "모든 항목을 입력해주세요." }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await resend.emails.send({
     from: "SLAM PICK <onboarding@resend.dev>",
-    to: "tjswo@slam-global.com",
+    to: ["tjswo@slam-global.com", "jhw@slam-global.com"],
     subject: `[마케팅 신청] ${brand}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px; color: #111;">
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         <p style="color: #888; font-size: 13px; margin: 0 0 32px;">SLAM PICK을 통해 새로운 신청이 들어왔습니다.</p>
         <table style="width: 100%; border-collapse: collapse;">
           <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 14px 0; font-size: 13px; color: #888; width: 100px;">브랜드명</td>
+            <td style="padding: 14px 0; font-size: 13px; color: #888; width: 120px;">브랜드명</td>
             <td style="padding: 14px 0; font-size: 15px; font-weight: 600;">${brand}</td>
           </tr>
           <tr style="border-bottom: 1px solid #eee;">
@@ -32,9 +32,13 @@ export async function POST(req: NextRequest) {
             <td style="padding: 14px 0; font-size: 13px; color: #888;">이메일</td>
             <td style="padding: 14px 0; font-size: 15px; font-weight: 600;">${email}</td>
           </tr>
-          <tr>
+          <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 14px 0; font-size: 13px; color: #888;">전화번호</td>
             <td style="padding: 14px 0; font-size: 15px; font-weight: 600;">${phone}</td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 0; font-size: 13px; color: #888;">OWM / 마케팅 예산</td>
+            <td style="padding: 14px 0; font-size: 15px; font-weight: 600;">${owmBudget || "미입력"}</td>
           </tr>
         </table>
         <p style="margin-top: 32px; font-size: 12px; color: #bbb;">신청 시각: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}</p>

@@ -220,6 +220,7 @@ export default function LoginPage() {
   const [applyManager, setApplyManager] = useState("");
   const [applyEmail, setApplyEmail] = useState("");
   const [applyPhone, setApplyPhone] = useState("");
+  const [applyOwmBudget, setApplyOwmBudget] = useState("");
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState("");
   const [applyDone, setApplyDone] = useState(false);
@@ -250,7 +251,7 @@ export default function LoginPage() {
     const res = await fetch("/api/apply", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brand: applyBrand, manager: applyManager, email: applyEmail, phone: applyPhone }),
+      body: JSON.stringify({ brand: applyBrand, manager: applyManager, email: applyEmail, phone: applyPhone, owmBudget: applyOwmBudget }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -952,6 +953,15 @@ export default function LoginPage() {
                   value={applyPhone}
                   onChange={(e) => setApplyPhone(e.target.value)}
                   required
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                />
+                <input
+                  type="text"
+                  placeholder="OWM과 정해진 마케팅 예산"
+                  value={applyOwmBudget}
+                  onChange={(e) => setApplyOwmBudget(e.target.value)}
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)")}
                   onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
