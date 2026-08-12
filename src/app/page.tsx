@@ -54,8 +54,8 @@ const SERVICES: ServiceData[] = [
       effect:
         "대부분의 광고는 '갖고 싶다'까지 데려가고 멈춥니다. OWM 방문 콘텐츠는 그다음 한 걸음, '사러 가야겠다'까지를 설계합니다. 약국이라는 공간의 전문성이 제품에 신뢰를 더하고, 촬영된 장소가 곧 판매처이기 때문에 소비자는 제품을 기억하는 순간 살 곳까지 함께 기억합니다.\n\n제품 인지 · 구매처 각인 · 오프라인 전환을 한 번의 제작으로 확보할 수 있습니다.",
       videoUrls: [
-        "https://www.xiaohongshu.com/discovery/item/6a70237f000000002500e201",
-        "https://www.xiaohongshu.com/discovery/item/6a7012000000000022017709",
+        "https://www.xiaohongshu.com/explore/6a70237f000000002500e201?xsec_token=CBrhFqPrtpQAsRF5jPRshf4_IE9zC8BeoSRNzbP8Zu-3M=&xsec_source=pc_share&source=webshare",
+        "https://www.xiaohongshu.com/explore/6a7012000000000022017709?xsec_token=CBrhFqPrtpQAsRF5jPRshf456hsvFAw_OzGlekvuWMsyY=&xsec_source=pc_share&source=webshare",
         "https://www.instagram.com/reel/DanWmjJz66J/embed/",
       ],
       tiers: [
