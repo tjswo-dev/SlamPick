@@ -14,6 +14,7 @@ interface TierVideo {
 interface ServiceTier {
   level: string;
   badge: string;
+  price?: string;
   features: string[];
   effect: string;
   videos?: TierVideo[];
@@ -53,9 +54,44 @@ const SERVICES: ServiceData[] = [
       effect:
         "대부분의 광고는 '갖고 싶다'까지 데려가고 멈춥니다. OWM 방문 콘텐츠는 그다음 한 걸음, '사러 가야겠다'까지를 설계합니다. 약국이라는 공간의 전문성이 제품에 신뢰를 더하고, 촬영된 장소가 곧 판매처이기 때문에 소비자는 제품을 기억하는 순간 살 곳까지 함께 기억합니다.\n\n제품 인지 · 구매처 각인 · 오프라인 전환을 한 번의 제작으로 확보할 수 있습니다.",
       videoUrls: [
-        "https://www.instagram.com/reel/DZO32cqSIJW/embed/",
-        "https://www.instagram.com/reel/DVIKGv5k3Ia/embed/",
-        "https://www.tiktok.com/embed/v2/7640331701192871189",
+        "https://www.xiaohongshu.com/discovery/item/6a70237f000000002500e201",
+        "https://www.xiaohongshu.com/discovery/item/6a7012000000000022017709",
+        "https://www.instagram.com/reel/DanWmjJz66J/embed/",
+      ],
+      tiers: [
+        {
+          level: "왕홍 · 메가",
+          badge: "MEGA",
+          price: "200~300만원",
+          features: [
+            "팔로워 100만+ 이상의 메가 크리에이터",
+            "단기간 폭발적 브랜드 인지도 확산",
+            "OWM 매장 방문 콘텐츠로 구매 목적지까지 각인",
+          ],
+          effect: "압도적인 도달률로 브랜드를 빠르게 각인시키고, OWM을 방문해야 할 이유를 대중에게 동시에 전달합니다.",
+        },
+        {
+          level: "미들",
+          badge: "MIDDLE",
+          price: "50~100만원",
+          features: [
+            "팔로워 10만~100만의 중견 크리에이터",
+            "탄탄한 팬층과 높은 신뢰도 기반 추천",
+            "메가급 대비 높은 참여율과 구매 전환율",
+          ],
+          effect: "신뢰도 높은 팔로워십을 바탕으로 '약국에서 직접 사야 한다'는 구매 행동으로 자연스럽게 연결합니다.",
+        },
+        {
+          level: "마이크로",
+          badge: "MICRO",
+          price: "20~30만원",
+          features: [
+            "팔로워 1만~10만의 일상 밀착형 크리에이터",
+            "광고보다 친구 추천에 가까운 높은 공감도",
+            "다수 운영 시 누적 도달과 콘텐츠 자산 동시 확보",
+          ],
+          effect: "소규모지만 밀도 높은 팬과의 소통으로 실구매 전환율이 높고, 여러 명 동시 운영 시 비용 대비 최고 효율을 냅니다.",
+        },
       ],
     },
   },
@@ -762,11 +798,19 @@ export default function LoginPage() {
                         <div style={{ display: "flex", gap: "14px", marginTop: "20px" }}>
                           {svc.detail.tiers.map((tier, i) => (
                             <div key={i} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
-                              <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "10px" }}>
-                                <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.13)", color: "#fff", padding: "3px 12px", borderRadius: "20px", letterSpacing: "0.1em", flexShrink: 0 }}>
-                                  {tier.badge}
-                                </span>
-                                <span style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>{tier.level}</span>
+                              <div style={{ padding: "18px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: tier.price ? "10px" : "0" }}>
+                                  <span style={{ fontSize: "10px", fontWeight: "800", backgroundColor: "rgba(255,255,255,0.13)", color: "#fff", padding: "3px 12px", borderRadius: "20px", letterSpacing: "0.1em", flexShrink: 0 }}>
+                                    {tier.badge}
+                                  </span>
+                                  <span style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>{tier.level}</span>
+                                </div>
+                                {tier.price && (
+                                  <p style={{ fontSize: "20px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", margin: 0 }}>
+                                    {tier.price}
+                                    <span style={{ fontSize: "12px", fontWeight: "500", color: "rgba(255,255,255,0.4)", marginLeft: "4px" }}>/ 건</span>
+                                  </p>
+                                )}
                               </div>
                               <div style={{ padding: "20px 22px" }}>
                                 <ul style={{ margin: "0 0 16px", paddingLeft: "18px" }}>
@@ -811,6 +855,16 @@ export default function LoginPage() {
                             {sub.videoUrls.map((url, vi) => {
                               const vw = sub.videoUrls!.length >= 3 ? "330px" : "400px";
                               const vh = sub.videoUrls!.length >= 3 ? "640px" : "780px";
+                              if (url.includes("xiaohongshu.com")) {
+                                return (
+                                  <a key={vi} href={url} target="_blank" rel="noopener noreferrer" style={{ width: vw, height: vh, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(255,36,66,0.25)", gap: "20px" }}>
+                                    <div style={{ width: "72px", height: "72px", borderRadius: "18px", backgroundColor: "#FF2442", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                      <span style={{ fontSize: "13px", fontWeight: "900", color: "#fff", lineHeight: 1.2, textAlign: "center" }}>小红书</span>
+                                    </div>
+                                    <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)" }}>클릭하여 보기</span>
+                                  </a>
+                                );
+                              }
                               return (
                                 <div key={vi} style={{ width: vw, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
                                   <iframe
@@ -846,6 +900,16 @@ export default function LoginPage() {
                         {svc.detail.videoUrls.map((url, i) => {
                           const vw = svc.detail.videoUrls!.length >= 3 ? "330px" : "400px";
                           const vh = svc.detail.videoUrls!.length >= 3 ? "640px" : "780px";
+                          if (url.includes("xiaohongshu.com")) {
+                            return (
+                              <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ width: vw, height: vh, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(255,36,66,0.25)", gap: "20px" }}>
+                                <div style={{ width: "72px", height: "72px", borderRadius: "18px", backgroundColor: "#FF2442", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <span style={{ fontSize: "13px", fontWeight: "900", color: "#fff", lineHeight: 1.2, textAlign: "center" }}>小红书</span>
+                                </div>
+                                <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)" }}>클릭하여 보기</span>
+                              </a>
+                            );
+                          }
                           return (
                           <div key={i} style={{ width: vw, flexShrink: 0, borderRadius: "16px", overflow: "hidden", backgroundColor: "#000" }}>
                             <iframe
