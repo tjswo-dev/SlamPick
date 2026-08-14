@@ -10,8 +10,10 @@ import {
 } from "@/lib/content-guides";
 
 const PAGE_SIZE = 4;
-const STEP_MS = 1400;
+const STEP_MS = 1700;
+const PHASE_OUT_MS = 520;
 const LONG_TEXT_THRESHOLD = 160;
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 interface ContentGuidePageClientProps {
   serviceId: string;
@@ -22,15 +24,19 @@ export default function ContentGuidePageClient({
 }: ContentGuidePageClientProps) {
   const router = useRouter();
   const meta = CONTENT_GUIDES[serviceId];
-  const [phase, setPhase] = useState<"analyzing" | "list">("analyzing");
+  const [phase, setPhase] = useState<"analyzing" | "leaving" | "list">(
+    "analyzing"
+  );
   const [step, setStep] = useState(0);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [prevVisibleCount, setPrevVisibleCount] = useState(0);
 
   useEffect(() => {
     setPhase("analyzing");
     setStep(0);
     setVisibleCount(PAGE_SIZE);
+    setPrevVisibleCount(0);
     setExpandedId(null);
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -39,7 +45,16 @@ export default function ContentGuidePageClient({
       timers.push(setTimeout(() => setStep(i), STEP_MS * i));
     });
     timers.push(
-      setTimeout(() => setPhase("list"), STEP_MS * ANALYZE_STEPS.length)
+      setTimeout(() => setPhase("leaving"), STEP_MS * ANALYZE_STEPS.length)
+    );
+    timers.push(
+      setTimeout(
+        () => {
+          setPrevVisibleCount(0);
+          setPhase("list");
+        },
+        STEP_MS * ANALYZE_STEPS.length + PHASE_OUT_MS
+      )
     );
     return () => timers.forEach(clearTimeout);
   }, [serviceId]);
@@ -78,27 +93,26 @@ export default function ContentGuidePageClient({
         background: "#000",
         color: "#fff",
         fontFamily: "system-ui, -apple-system, sans-serif",
+        overflowX: "hidden",
       }}
     >
-      <style>{`
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      <style>{MOTION_CSS}</style>
 
       <header
+        className="cg-fade-in"
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: "20px 28px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
+          animationDelay: "40ms",
         }}
       >
         <button
           type="button"
           onClick={() => router.push("/")}
+          className="cg-link"
           style={{
             background: "none",
             border: "none",
@@ -123,29 +137,38 @@ export default function ContentGuidePageClient({
         </span>
       </header>
 
-      {phase === "analyzing" ? (
-        <AnalyzingView step={step} />
-      ) : (
+      {phase === "list" ? (
         <ListView
           meta={meta}
           visibleCount={visibleCount}
+          prevVisibleCount={prevVisibleCount}
           expandedId={expandedId}
           onExpand={(id) => setExpandedId(id)}
           onCollapse={() => setExpandedId(null)}
-          onLoadMore={() =>
-            setVisibleCount((n) => Math.min(n + PAGE_SIZE, meta.guides.length))
-          }
+          onLoadMore={() => {
+            setPrevVisibleCount(visibleCount);
+            setVisibleCount((n) => Math.min(n + PAGE_SIZE, meta.guides.length));
+          }}
         />
+      ) : (
+        <AnalyzingView step={step} leaving={phase === "leaving"} />
       )}
     </main>
   );
 }
 
-function AnalyzingView({ step }: { step: number }) {
+function AnalyzingView({
+  step,
+  leaving,
+}: {
+  step: number;
+  leaving: boolean;
+}) {
   const progress = ((step + 1) / ANALYZE_STEPS.length) * 100;
 
   return (
     <div
+      className={leaving ? "cg-phase-out" : "cg-phase-in"}
       style={{
         minHeight: "calc(100vh - 65px)",
         display: "flex",
@@ -153,11 +176,16 @@ function AnalyzingView({ step }: { step: number }) {
         alignItems: "center",
         justifyContent: "center",
         padding: "64px 40px",
-        animation: "fadeSlideIn 0.4s ease both",
+        position: "relative",
       }}
     >
-      <p style={eyebrowStyle}>Content Guide</p>
+      <div className="cg-soft-glow" aria-hidden />
+
+      <p className="cg-fade-up" style={{ ...eyebrowStyle, animationDelay: "80ms" }}>
+        Content Guide
+      </p>
       <h1
+        className="cg-fade-up"
         style={{
           fontSize: "clamp(24px, 3.5vw, 40px)",
           fontWeight: 900,
@@ -166,22 +194,29 @@ function AnalyzingView({ step }: { step: number }) {
           textAlign: "center",
           marginBottom: "14px",
           wordBreak: "keep-all",
+          animationDelay: "160ms",
         }}
       >
         콘텐츠 레퍼런스를 분석하고 있습니다
       </h1>
       <p
+        key={step}
+        className="cg-status-swap"
         style={{
           fontSize: "14px",
           color: "rgba(255,255,255,0.45)",
           marginBottom: "56px",
           textAlign: "center",
+          minHeight: "1.4em",
         }}
       >
         {ANALYZE_STEPS[step]?.status}
       </p>
 
-      <div style={{ width: "100%", maxWidth: "520px" }}>
+      <div
+        className="cg-fade-up"
+        style={{ width: "100%", maxWidth: "520px", animationDelay: "280ms" }}
+      >
         <div
           style={{
             height: "3px",
@@ -192,12 +227,12 @@ function AnalyzingView({ step }: { step: number }) {
           }}
         >
           <div
+            className="cg-progress-fill"
             style={{
               height: "100%",
               width: `${progress}%`,
               backgroundColor: "#fff",
               borderRadius: "9999px",
-              transition: "width 0.6s ease",
             }}
           />
         </div>
@@ -222,7 +257,8 @@ function AnalyzingView({ step }: { step: number }) {
                     active || done
                       ? "rgba(255,255,255,0.9)"
                       : "rgba(255,255,255,0.28)",
-                  transition: "color 0.3s",
+                  transform: active ? "translateY(-1px)" : "none",
+                  transition: `color 0.7s ${EASE}, font-weight 0.7s ${EASE}, transform 0.7s ${EASE}`,
                 }}
               >
                 {s.label}
@@ -238,6 +274,7 @@ function AnalyzingView({ step }: { step: number }) {
 function ListView({
   meta,
   visibleCount,
+  prevVisibleCount,
   expandedId,
   onExpand,
   onCollapse,
@@ -245,6 +282,7 @@ function ListView({
 }: {
   meta: ContentGuideMeta;
   visibleCount: number;
+  prevVisibleCount: number;
   expandedId: string | null;
   onExpand: (id: string) => void;
   onCollapse: () => void;
@@ -255,14 +293,17 @@ function ListView({
 
   return (
     <div
+      className="cg-phase-in"
       style={{
         maxWidth: "960px",
         margin: "0 auto",
         padding: "56px 24px 96px",
-        animation: "fadeSlideIn 0.5s ease both",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "48px" }}>
+      <div
+        className="cg-fade-up"
+        style={{ textAlign: "center", marginBottom: "48px", animationDelay: "60ms" }}
+      >
         <p style={eyebrowStyle}>Content Guide</p>
         <h1
           style={{
@@ -289,20 +330,44 @@ function ListView({
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-        {visible.map((guide) => (
-          <GuideCard
-            key={guide.id}
-            guide={guide}
-            expanded={expandedId === guide.id}
-            onExpand={() => onExpand(guide.id)}
-            onCollapse={onCollapse}
-          />
-        ))}
+        {visible.map((guide, i) => {
+          const isNew = i >= prevVisibleCount;
+          const staggerIndex = isNew ? i - prevVisibleCount : i;
+          const delayMs =
+            (isNew ? 40 : 120) + staggerIndex * (isNew ? 70 : 90);
+          return (
+            <div
+              key={guide.id}
+              className="cg-fade-up"
+              style={{ animationDelay: `${delayMs}ms` }}
+            >
+              <GuideCard
+                guide={guide}
+                expanded={expandedId === guide.id}
+                onExpand={() => onExpand(guide.id)}
+                onCollapse={onCollapse}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {hasMore && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "36px" }}>
-          <button type="button" onClick={onLoadMore} style={loadMoreStyle}>
+        <div
+          className="cg-fade-up"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "36px",
+            animationDelay: `${120 + visible.length * 70}ms`,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onLoadMore}
+            className="cg-pill"
+            style={loadMoreStyle}
+          >
             가이드 더 보기 - {visibleCount}/{meta.guides.length}
           </button>
         </div>
@@ -327,9 +392,29 @@ function GuideCard({
   }
 
   return (
-    <div style={cardStyle}>
+    <div
+      className="cg-card"
+      style={cardStyle}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
       <GuideThumb guide={guide} />
-      <div style={{ flex: "1 1 220px", minWidth: 0, display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          flex: "1 1 220px",
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -349,7 +434,9 @@ function GuideCard({
               wordBreak: "keep-all",
             }}
           >
-            <span style={{ color: "rgba(255,255,255,0.35)", marginRight: "8px" }}>
+            <span
+              style={{ color: "rgba(255,255,255,0.35)", marginRight: "8px" }}
+            >
               {String(guide.index).padStart(2, "0")}
             </span>
             {guide.title}
@@ -377,9 +464,14 @@ function GuideCard({
             borderTop: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <button type="button" onClick={onExpand} style={linkBtnStyle}>
+          <button
+            type="button"
+            onClick={onExpand}
+            className="cg-link"
+            style={linkBtnStyle}
+          >
             가이드 자세히 보기
-            <span>→</span>
+            <span className="cg-arrow">→</span>
           </button>
         </div>
       </div>
@@ -398,24 +490,30 @@ function ExpandedGuide({
 
   return (
     <div
+      className="cg-expand"
       style={{
         ...cardStyle,
         flexDirection: "column",
         gap: "28px",
         padding: "28px",
-        animation: "fadeSlideIn 0.35s ease both",
       }}
     >
       {stacked ? (
         <>
           <ExpandedHeader guide={guide} />
-          <p style={bodyTextStyle}>{guide.summary}</p>
-          <VideoPlaceholder
-            duration={guide.videoDuration}
-            videoUrl={guide.videoUrl}
-            fullWidth
-          />
-          <DetailSections guide={guide} />
+          <p className="cg-fade-up" style={{ ...bodyTextStyle, animationDelay: "80ms" }}>
+            {guide.summary}
+          </p>
+          <div className="cg-fade-up" style={{ animationDelay: "140ms" }}>
+            <VideoPlaceholder
+              duration={guide.videoDuration}
+              videoUrl={guide.videoUrl}
+              fullWidth
+            />
+          </div>
+          <div className="cg-fade-up" style={{ animationDelay: "220ms" }}>
+            <DetailSections guide={guide} />
+          </div>
         </>
       ) : (
         <div
@@ -426,11 +524,16 @@ function ExpandedGuide({
             flexWrap: "wrap",
           }}
         >
-          <VideoPlaceholder
-            duration={guide.videoDuration}
-            videoUrl={guide.videoUrl}
-          />
-          <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+          <div className="cg-fade-up" style={{ animationDelay: "60ms" }}>
+            <VideoPlaceholder
+              duration={guide.videoDuration}
+              videoUrl={guide.videoUrl}
+            />
+          </div>
+          <div
+            className="cg-fade-up"
+            style={{ flex: "1 1 280px", minWidth: 0, animationDelay: "140ms" }}
+          >
             <ExpandedHeader guide={guide} />
             <DetailSections guide={guide} />
           </div>
@@ -438,16 +541,23 @@ function ExpandedGuide({
       )}
 
       <div
+        className="cg-fade-up"
         style={{
           display: "flex",
           justifyContent: "flex-end",
           paddingTop: "8px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
+          animationDelay: "280ms",
         }}
       >
-        <button type="button" onClick={onCollapse} style={linkBtnStyle}>
+        <button
+          type="button"
+          onClick={onCollapse}
+          className="cg-link"
+          style={linkBtnStyle}
+        >
           접기
-          <span>↑</span>
+          <span className="cg-arrow">↑</span>
         </button>
       </div>
     </div>
@@ -506,7 +616,7 @@ function Section({ label, body }: { label: string; body: string }) {
   return (
     <div>
       <p style={sectionLabelStyle}>{label}</p>
-      <p style={{ ...bodyTextStyle, marginTop: "8px" }}>{body}</p>
+      <p style={{ ...bodyTextStyle, marginTop: "8px", whiteSpace: "pre-line" }}>{body}</p>
     </div>
   );
 }
@@ -585,7 +695,9 @@ function VideoPlaceholder({
           justifyContent: "center",
         }}
       >
-        <span style={{ marginLeft: "3px", fontSize: "18px", color: "#fff" }}>▶</span>
+        <span style={{ marginLeft: "3px", fontSize: "18px", color: "#fff" }}>
+          ▶
+        </span>
       </div>
       <p
         style={{
@@ -608,6 +720,7 @@ function VideoPlaceholder({
 
 function GuideThumb({ guide }: { guide: ContentGuideItem }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const postUrl = guide.videoUrl?.replace(/\/embed\/?$/, "/") ?? "";
   const src =
     !failed && postUrl
@@ -634,11 +747,15 @@ function GuideThumb({ guide }: { guide: ContentGuideItem }) {
           src={src}
           alt=""
           onError={() => setFailed(true)}
+          onLoad={() => setLoaded(true)}
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
             display: "block",
+            opacity: loaded ? 1 : 0,
+            transform: loaded ? "scale(1)" : "scale(1.04)",
+            transition: `opacity 0.7s ${EASE}, transform 0.9s ${EASE}`,
           }}
         />
       ) : (
@@ -677,6 +794,109 @@ function GuideThumb({ guide }: { guide: ContentGuideItem }) {
     </div>
   );
 }
+
+const MOTION_CSS = `
+  @keyframes cgFadeUp {
+    from { opacity: 0; transform: translateY(18px); filter: blur(2px); }
+    to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  @keyframes cgFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes cgPhaseIn {
+    from { opacity: 0; transform: translateY(22px) scale(0.992); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes cgPhaseOut {
+    from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    to   { opacity: 0; transform: translateY(-12px) scale(0.985); filter: blur(3px); }
+  }
+  @keyframes cgStatusSwap {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes cgExpand {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes cgPulseGlow {
+    0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 0.55; transform: translate(-50%, -50%) scale(1.08); }
+  }
+  .cg-fade-up {
+    opacity: 0;
+    animation: cgFadeUp 0.85s ${EASE} both;
+  }
+  .cg-fade-in {
+    opacity: 0;
+    animation: cgFadeIn 0.7s ${EASE} both;
+  }
+  .cg-phase-in {
+    animation: cgPhaseIn 0.9s ${EASE} both;
+  }
+  .cg-phase-out {
+    animation: cgPhaseOut ${PHASE_OUT_MS}ms ${EASE} both;
+    pointer-events: none;
+  }
+  .cg-status-swap {
+    animation: cgStatusSwap 0.65s ${EASE} both;
+  }
+  .cg-expand {
+    animation: cgExpand 0.65s ${EASE} both;
+  }
+  .cg-progress-fill {
+    transition: width 1.1s ${EASE};
+  }
+  .cg-card {
+    transition: background-color 0.45s ${EASE}, border-color 0.45s ${EASE}, transform 0.45s ${EASE}, box-shadow 0.45s ${EASE};
+    will-change: transform;
+  }
+  .cg-link {
+    transition: color 0.35s ${EASE};
+  }
+  .cg-link:hover {
+    color: #fff !important;
+  }
+  .cg-arrow {
+    display: inline-block;
+    transition: transform 0.35s ${EASE};
+  }
+  .cg-link:hover .cg-arrow {
+    transform: translateX(3px);
+  }
+  .cg-pill {
+    transition: background 0.4s ${EASE}, border-color 0.4s ${EASE}, transform 0.4s ${EASE};
+  }
+  .cg-pill:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: rgba(255,255,255,0.55) !important;
+    transform: translateY(-1px);
+  }
+  .cg-soft-glow {
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    left: 50%;
+    top: 42%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 68%);
+    pointer-events: none;
+    animation: cgPulseGlow 3.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cg-fade-up, .cg-fade-in, .cg-phase-in, .cg-phase-out,
+    .cg-status-swap, .cg-expand, .cg-soft-glow {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+    }
+    .cg-progress-fill, .cg-card, .cg-link, .cg-pill, .cg-arrow {
+      transition: none !important;
+    }
+  }
+`;
 
 const eyebrowStyle: CSSProperties = {
   fontSize: "11px",

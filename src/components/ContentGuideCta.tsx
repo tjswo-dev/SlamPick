@@ -21,9 +21,18 @@ export default function ContentGuideCta({
         marginTop: "48px",
         textAlign: "center",
         padding: "56px 40px 8px",
-        animation: "fadeSlideIn 0.5s ease both",
+        animation: "cgCtaIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
       }}
     >
+      <style>{`
+        @keyframes cgCtaIn {
+          from { opacity: 0; transform: translateY(16px); filter: blur(2px); }
+          to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          div { animation: none !important; }
+        }
+      `}</style>
       <p
         style={{
           fontSize: "11px",
@@ -78,13 +87,16 @@ export default function ContentGuideCta({
           fontWeight: 700,
           cursor: "pointer",
           letterSpacing: "-0.01em",
-          transition: "opacity 0.2s",
+          transition:
+            "opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = "0.88";
+          e.currentTarget.style.opacity = "0.9";
+          e.currentTarget.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.opacity = "1";
+          e.currentTarget.style.transform = "translateY(0)";
         }}
       >
         콘텐츠 가이드 분석하기
