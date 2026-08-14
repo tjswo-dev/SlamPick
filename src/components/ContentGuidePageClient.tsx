@@ -328,7 +328,7 @@ function GuideCard({
 
   return (
     <div style={cardStyle}>
-      <div style={thumbStyle} />
+      <GuideThumb guide={guide} />
       <div style={{ flex: "1 1 220px", minWidth: 0, display: "flex", flexDirection: "column" }}>
         <div
           style={{
@@ -350,7 +350,7 @@ function GuideCard({
             }}
           >
             <span style={{ color: "rgba(255,255,255,0.35)", marginRight: "8px" }}>
-              {guide.code || String(guide.index).padStart(2, "0")}
+              {String(guide.index).padStart(2, "0")}
             </span>
             {guide.title}
           </h2>
@@ -467,7 +467,7 @@ function ExpandedHeader({ guide }: { guide: ContentGuideItem }) {
       }}
     >
       <span style={{ color: "rgba(255,255,255,0.35)", marginRight: "10px" }}>
-        {guide.code || String(guide.index).padStart(2, "0")}
+        {String(guide.index).padStart(2, "0")}
       </span>
       {guide.title}
     </h2>
@@ -606,6 +606,78 @@ function VideoPlaceholder({
   );
 }
 
+function GuideThumb({ guide }: { guide: ContentGuideItem }) {
+  const [failed, setFailed] = useState(false);
+  const postUrl = guide.videoUrl?.replace(/\/embed\/?$/, "/") ?? "";
+  const src =
+    !failed && postUrl
+      ? `/api/content-guide/thumb?url=${encodeURIComponent(postUrl)}`
+      : null;
+
+  return (
+    <div
+      style={{
+        width: "132px",
+        height: "168px",
+        flexShrink: 0,
+        borderRadius: "14px",
+        overflow: "hidden",
+        position: "relative",
+        background:
+          "linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          onError={() => setFailed(true)}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background:
+              "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.12), transparent 55%), linear-gradient(160deg, #1a1a1a, #0a0a0a)",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: 800,
+              color: "rgba(255,255,255,0.35)",
+              letterSpacing: "0.08em",
+            }}
+          >
+            {String(guide.index).padStart(2, "0")}
+          </span>
+        </div>
+      )}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 45%)",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
+
 const eyebrowStyle: CSSProperties = {
   fontSize: "11px",
   fontWeight: 700,
@@ -624,16 +696,6 @@ const cardStyle: CSSProperties = {
   padding: "22px",
   alignItems: "stretch",
   flexWrap: "wrap",
-};
-
-const thumbStyle: CSSProperties = {
-  width: "120px",
-  minHeight: "150px",
-  flexShrink: 0,
-  borderRadius: "12px",
-  background:
-    "linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-  border: "1px solid rgba(255,255,255,0.06)",
 };
 
 const sectionLabelStyle: CSSProperties = {

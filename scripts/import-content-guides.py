@@ -17,6 +17,17 @@ def embed(url):
     return url
 
 
+def thumbnail(url):
+    if not url:
+        return None
+    m = re.search(r"instagram\.com/(?:p|reel|tv)/([^/?#]+)", url)
+    if not m:
+        return None
+    code = m.group(1)
+    # Instagram media redirect — used as preview; UI falls back if blocked
+    return f"https://www.instagram.com/p/{code}/media/?size=l"
+
+
 def esc(s):
     if s is None:
         s = ""
@@ -54,11 +65,13 @@ for sheet, payload in data.items():
         title = re.sub(r"^[A-Z]+-\d+\s*", "", concept).strip() or concept
         desc = (row.get("컨셉 설명") or "").strip()
         caption = (row.get("매칭 캡션(요약)") or "").strip()
+        raw_url = row.get("영상 URL")
+        video_url = embed(raw_url)
         buckets[sid].append(
             {
-                "code": key3,
                 "title": title,
-                "videoUrl": embed(row.get("영상 URL")),
+                "videoUrl": video_url,
+                "thumbnail": thumbnail(raw_url or video_url or ""),
                 "matchedCaption": caption,
                 "concept": desc,
                 "summary": desc,
@@ -93,7 +106,6 @@ lines = []
 lines.append("export interface ContentGuideItem {")
 lines.append("  id: string;")
 lines.append("  index: number;")
-lines.append("  code: string;")
 lines.append("  title: string;")
 lines.append("  /** Collapsed card summary */")
 lines.append("  summary: string;")
@@ -128,13 +140,13 @@ for sid, items in buckets.items():
         lines.append("      {")
         lines.append(f'        id: "{sid}-{n}",')
         lines.append(f"        index: {i},")
-        lines.append(f"        code: {esc(g['code'])},")
         lines.append(f"        title: {esc(g['title'])},")
         lines.append(f"        summary: {esc(g['summary'])},")
         lines.append(f"        concept: {esc(g['concept'])},")
         lines.append(f"        description: {esc(g['description'])},")
         lines.append(f"        matchedCaption: {esc(g['matchedCaption'])},")
         lines.append('        videoDuration: "—",')
+        lines.append(f"        thumbnail: {esc(g['thumbnail'])},")
         lines.append(f"        videoUrl: {esc(g['videoUrl'])},")
         lines.append("      },")
     lines.append("    ],")
