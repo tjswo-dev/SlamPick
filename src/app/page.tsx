@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
+import ContentGuideCta from "@/components/ContentGuideCta";
+import { CONTENT_GUIDES } from "@/lib/content-guides";
 
 interface TierVideo {
   url: string;
@@ -943,6 +945,15 @@ export default function LoginPage() {
                     {svc.detail.effect}
                   </p>
                 </div>
+
+                <ContentGuideCta
+                  serviceId={svc.id}
+                  subtitle={
+                    CONTENT_GUIDES[svc.id]?.ctaSubtitle ??
+                    "콘텐츠의 제작 방향을 확인해보세요."
+                  }
+                  guideCount={CONTENT_GUIDES[svc.id]?.guides.length ?? 0}
+                />
               </div>
             );
           })()}
