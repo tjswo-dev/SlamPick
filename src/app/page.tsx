@@ -34,6 +34,7 @@ interface ServiceData {
     effect: string;
     tiers?: ServiceTier[];
     videoUrls?: string[];
+    partners?: { name: string; store: string; handle: string; url: string; avatar?: string }[];
     subCategories?: {
       title: string;
       description: string;
@@ -112,6 +113,12 @@ const SERVICES: ServiceData[] = [
       videoUrls: [
         "https://www.instagram.com/reel/DYq3zKax3Z7/embed/",
         "https://www.instagram.com/reel/DUaXZRVE53V/embed/",
+      ],
+      partners: [
+        { name: "Jun", store: "이태원점", handle: "@kpharmacist_jun", url: "https://www.tiktok.com/@kpharmacist_jun", avatar: "/avatar-jun.png" },
+        { name: "David", store: "성수점", handle: "@kpharmacist_david", url: "https://www.tiktok.com/@kpharmacist_david", avatar: "/avatar-david.png" },
+        { name: "kpharmacistcouple", store: "신사점", handle: "@kpharmacistcouple", url: "https://www.tiktok.com/@kpharmacistcouple", avatar: "/avatar-kpharmacistcouple.png" },
+        { name: "Knock", store: "북촌점", handle: "@knock.kpharmacist", url: "https://www.tiktok.com/@knock.kpharmacist", avatar: "/avatar-knock.png" },
       ],
     },
   },
@@ -1079,6 +1086,34 @@ export default function LoginPage() {
                     )}
                   </div>
                 </div>}
+
+                {/* Partners */}
+                {svc.detail.partners && svc.detail.partners.length > 0 && (
+                  <div style={{ marginBottom: "56px" }}>
+                    <SectionLabel dark>함께하는 약사님들</SectionLabel>
+                    <div style={{ marginTop: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+                      {svc.detail.partners.map((p, pi) => (
+                        <a key={pi} href={p.url} target="_blank" rel="noopener noreferrer"
+                          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "14px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "16px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+                        >
+                          <div style={{ width: "52px", height: "52px", borderRadius: "50%", flexShrink: 0, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid rgba(255,255,255,0.15)" }}>
+                            {p.avatar
+                              ? <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              : <span style={{ fontSize: "18px", fontWeight: "700", color: "rgba(255,255,255,0.6)" }}>{p.name[0].toUpperCase()}</span>
+                            }
+                          </div>
+                          <div>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: "600", marginBottom: "3px" }}>{p.store}</p>
+                            <p style={{ fontSize: "15px", color: "#fff", fontWeight: "700", marginBottom: "3px" }}>{p.name}</p>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>{p.handle}</p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Expected outcome (subCategories가 있을 때도 표시) */}
                 <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
