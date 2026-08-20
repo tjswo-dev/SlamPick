@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
+import ContentGuideCta from "@/components/ContentGuideCta";
+import { CONTENT_GUIDES } from "@/lib/content-guides";
 
 interface TierVideo {
   url: string;
@@ -32,6 +34,7 @@ interface ServiceData {
     effect: string;
     tiers?: ServiceTier[];
     videoUrls?: string[];
+    partners?: { name: string; store: string; handle: string; url: string; avatar?: string }[];
     subCategories?: {
       title: string;
       description: string;
@@ -110,6 +113,12 @@ const SERVICES: ServiceData[] = [
       videoUrls: [
         "https://www.instagram.com/reel/DYq3zKax3Z7/embed/",
         "https://www.instagram.com/reel/DUaXZRVE53V/embed/",
+      ],
+      partners: [
+        { name: "Jun", store: "이태원점", handle: "@kpharmacist_jun", url: "https://www.tiktok.com/@kpharmacist_jun", avatar: "/avatar-jun.png" },
+        { name: "David", store: "성수점", handle: "@kpharmacist_david", url: "https://www.tiktok.com/@kpharmacist_david", avatar: "/avatar-david.png" },
+        { name: "kpharmacistcouple", store: "신사점", handle: "@kpharmacistcouple", url: "https://www.tiktok.com/@kpharmacistcouple", avatar: "/avatar-kpharmacistcouple.png" },
+        { name: "Knock", store: "북촌점", handle: "@knock.kpharmacist", url: "https://www.tiktok.com/@knock.kpharmacist", avatar: "/avatar-knock.png" },
       ],
     },
   },
@@ -260,6 +269,12 @@ export default function LoginPage() {
   const [applyLoading, setApplyLoading] = useState(false);
   const [applyError, setApplyError] = useState("");
   const [applyDone, setApplyDone] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setHeroReady(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,7 +317,17 @@ export default function LoginPage() {
   const scrollToServices = () => {
     setHeroAnimated(true);
     setServicesExpanded(true);
-    setTimeout(() => servicesRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
+    // expand 레이아웃이 잡힌 뒤, 서비스 섹션 SLAM PICK이 화면 최상단에 오도록 스크롤
+    const scrollHeadingToTop = () => {
+      const el = slamPickHeadingRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: Math.max(0, top - 16), behavior: "smooth" });
+    };
+    requestAnimationFrame(() => {
+      setTimeout(scrollHeadingToTop, 80);
+      setTimeout(scrollHeadingToTop, 420);
+    });
   };
 
   useEffect(() => {
@@ -325,13 +350,14 @@ export default function LoginPage() {
   return (
     <>
       <style>{`
+        :root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); }
         @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(16px); filter: blur(2px); }
+          to   { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
         @keyframes modalIn {
-          from { opacity: 0; transform: translateY(24px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(2px); }
+          to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         @keyframes bounce {
           0%, 100% { transform: translateY(0) translateX(-50%); }
@@ -342,11 +368,96 @@ export default function LoginPage() {
           to   { opacity: 1; }
         }
         @keyframes expandDown {
-          from { opacity: 0; transform: translateY(-14px); }
+          from { opacity: 0; transform: translateY(18px); filter: blur(2px); }
+          to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @keyframes heroRise {
+          from { opacity: 0; transform: translateY(22px); filter: blur(3px); }
+          to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        @keyframes logoReveal {
+          0% {
+            opacity: 0;
+            letter-spacing: 0.42em;
+            transform: translateY(28px) scale(0.94);
+            filter: blur(10px);
+          }
+          55% {
+            opacity: 1;
+            filter: blur(0);
+          }
+          100% {
+            opacity: 1;
+            letter-spacing: -0.04em;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+        @keyframes logoCharIn {
+          from {
+            opacity: 0;
+            transform: translateY(0.55em);
+            filter: blur(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+          }
+        }
+        @keyframes detailReveal {
+          from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        .home-hero-logo {
+          animation: logoReveal 1.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .home-hero-logo-title {
+          position: relative;
+          display: inline-flex;
+          gap: 0.02em;
+        }
+        .home-hero-logo-char {
+          display: inline-block;
+          opacity: 0;
+          animation: logoCharIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .home-hero-bar {
+          animation: heroRise 1.15s var(--ease-out) 0.55s both;
+        }
+        .home-hero-cta {
+          animation: heroRise 1.15s var(--ease-out) 0.78s both;
+        }
+        .home-btn {
+          transition: background-color 0.4s var(--ease-out), color 0.4s var(--ease-out), border-color 0.4s var(--ease-out), opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out) !important;
+        }
+        .home-btn:hover {
+          transform: translateY(-1px);
+        }
+        .home-service-panel {
+          transition: flex 0.7s var(--ease-out), height 0.7s var(--ease-out), border-radius 0.5s var(--ease-out), background-color 0.4s var(--ease-out), outline-color 0.4s var(--ease-out), padding 0.5s var(--ease-out) !important;
+        }
+        .home-service-panel span,
+        .home-service-panel h3,
+        .home-service-panel p {
+          transition: color 0.45s var(--ease-out), font-size 0.5s var(--ease-out), margin 0.5s var(--ease-out), opacity 0.45s var(--ease-out) !important;
         }
         ::placeholder { color: rgba(255,255,255,0.25); }
         * { box-sizing: border-box; }
+        @media (prefers-reduced-motion: reduce) {
+          .home-hero-logo, .home-hero-bar, .home-hero-cta,
+          .home-hero-logo-char,
+          [style*="animation"] {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            filter: none !important;
+            letter-spacing: -0.04em !important;
+          }
+          .home-btn, .home-service-panel {
+            transition: none !important;
+          }
+        }
       `}</style>
 
       {/* ── HERO ── */}
@@ -362,9 +473,13 @@ export default function LoginPage() {
         }}
       >
         {/* Logo */}
-        <div style={{ textAlign: "center" }}>
+        <div
+          className={heroReady ? "home-hero-logo" : undefined}
+          style={{ textAlign: "center", opacity: heroReady ? undefined : 0 }}
+        >
           <h1
             onClick={() => setLogoExpanded((v) => !v)}
+            className="home-hero-logo-title"
             style={{
               fontSize: "clamp(48px, 10vw, 96px)",
               fontWeight: "900",
@@ -373,25 +488,46 @@ export default function LoginPage() {
               lineHeight: "1",
               fontFamily: "system-ui, -apple-system, sans-serif",
               cursor: "pointer",
-              transition: "opacity 0.2s",
+              transition: "opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
               userSelect: "none",
+              position: "relative",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.75"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.82"; }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           >
-            SLAM PICK
+            {"SLAM PICK".split("").map((ch, i) => (
+              <span
+                key={`${ch}-${i}`}
+                className={heroReady ? "home-hero-logo-char" : undefined}
+                style={{
+                  animationDelay: heroReady ? `${0.18 + i * 0.045}s` : undefined,
+                  width: ch === " " ? "0.28em" : undefined,
+                }}
+              >
+                {ch === " " ? "\u00A0" : ch}
+              </span>
+            ))}
           </h1>
         </div>
 
         {/* Bar + glow */}
-        <div style={{ position: "relative", width: "100%", display: "flex", justifyContent: "center" }}>
+        <div
+          className={heroReady ? "home-hero-bar" : undefined}
+          style={{
+            position: "relative",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            opacity: heroReady ? undefined : 0,
+          }}
+        >
           <div
             style={{
               marginTop: "16px",
               width: (heroAnimated || logoExpanded) ? "100vw" : "clamp(280px, 45vw, 460px)",
               height: "2px",
               background: "linear-gradient(90deg, transparent, #fff, transparent)",
-              transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.9s ease",
+              transition: "width 1.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.15s cubic-bezier(0.22, 1, 0.36, 1)",
               boxShadow: (heroAnimated || logoExpanded)
                 ? "0 0 12px rgba(255,255,255,1), 0 0 40px rgba(255,255,255,0.7), 0 0 100px rgba(255,255,255,0.25)"
                 : "none",
@@ -406,7 +542,7 @@ export default function LoginPage() {
               width: "100vw",
               height: (heroAnimated || logoExpanded) ? "55vh" : "0",
               background: "linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)",
-              transition: "height 1.4s ease 0.15s",
+              transition: "height 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s",
               pointerEvents: "none",
             }}
           />
@@ -414,6 +550,7 @@ export default function LoginPage() {
 
         {/* 히어로 중앙 영역 */}
         <div
+          className={heroReady ? "home-hero-cta" : undefined}
           style={{
             position: "relative",
             zIndex: 1,
@@ -421,26 +558,29 @@ export default function LoginPage() {
             maxWidth: "360px",
             padding: "0 24px",
             marginTop: "48px",
+            opacity: heroReady ? undefined : 0,
           }}
         >
           {logoExpanded ? (
             /* ── 로그인 / 대시보드 ── */
             loggedInUser ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", animation: "fadeSlideIn 0.5s ease both" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", animation: "fadeSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both" }}>
                 <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textAlign: "center", letterSpacing: "0.04em" }}>
                   {loggedInUser.email}
                 </p>
                 <button
+                  className="home-btn"
                   onClick={() => router.push(loggedInUser.email === "admin@slam-global.com" ? "/admin" : "/dashboard")}
-                  style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
+                  style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", textTransform: "uppercase" }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
                 >
                   대시보드로 이동 →
                 </button>
                 <button
+                  className="home-btn"
                   onClick={async () => { await supabase.auth.signOut(); setLoggedInUser(null); setLogoExpanded(false); }}
-                  style={{ width: "100%", background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", padding: "8px", fontSize: "12px", cursor: "pointer", transition: "color 0.2s", letterSpacing: "0.08em" }}
+                  style={{ width: "100%", background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", padding: "8px", fontSize: "12px", cursor: "pointer", letterSpacing: "0.08em" }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
                 >
@@ -450,7 +590,7 @@ export default function LoginPage() {
             ) : (
               <form
                 onSubmit={handleLogin}
-                style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeSlideIn 0.5s ease both" }}
+                style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both" }}
               >
                 <input
                   type="email"
@@ -476,7 +616,8 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ marginTop: "4px", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: loading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: loading ? 0.5 : 1 }}
+                  className="home-btn"
+                  style={{ marginTop: "4px", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: loading ? "default" : "pointer", textTransform: "uppercase", opacity: loading ? 0.5 : 1 }}
                   onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; } }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
                 >
@@ -484,8 +625,9 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
+                  className="home-btn"
                   onClick={() => router.push("/signup")}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px", transition: "color 0.2s" }}
+                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", fontSize: "13px", cursor: "pointer", padding: "8px" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
                 >
@@ -496,8 +638,9 @@ export default function LoginPage() {
           ) : (
             /* ── 서비스 소개 버튼 ── */
             <button
+              className="home-btn"
               onClick={scrollToServices}
-              style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase" }}
+              style={{ width: "100%", background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px", fontSize: "14px", fontWeight: "500", letterSpacing: "0.15em", cursor: "pointer", textTransform: "uppercase" }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; }}
             >
@@ -520,9 +663,17 @@ export default function LoginPage() {
       />
 
       {/* ── SERVICES SECTION ── */}
-      <section style={{ backgroundColor: "#f2f2f2", padding: "72px 40px 120px" }}>
+      <section style={{ backgroundColor: "#f2f2f2", padding: "28px 40px 120px" }}>
         {/* Heading */}
-        <div ref={slamPickHeadingRef} style={{ textAlign: "center", marginBottom: servicesExpanded ? "72px" : "0" }}>
+        <div
+          ref={slamPickHeadingRef}
+          style={{
+            textAlign: "center",
+            marginBottom: servicesExpanded ? "72px" : "0",
+            transition: "margin-bottom 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
+            scrollMarginTop: "16px",
+          }}
+        >
           <h2
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             style={{
@@ -533,6 +684,7 @@ export default function LoginPage() {
               lineHeight: 1,
               fontFamily: "system-ui, -apple-system, sans-serif",
               cursor: "pointer",
+              transition: "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
             SLAM PICK
@@ -545,7 +697,7 @@ export default function LoginPage() {
                 width: servicesExpanded ? "100vw" : "clamp(280px, 45vw, 460px)",
                 height: "2px",
                 background: "linear-gradient(90deg, transparent, #000, transparent)",
-                transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.9s ease",
+                transition: "width 1.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.15s cubic-bezier(0.22, 1, 0.36, 1)",
                 boxShadow: servicesExpanded
                   ? "0 0 12px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.25), 0 0 100px rgba(0,0,0,0.08)"
                   : "none",
@@ -560,7 +712,7 @@ export default function LoginPage() {
                 width: "100vw",
                 height: servicesExpanded ? "45vh" : "0",
                 background: "linear-gradient(to bottom, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0.03) 40%, transparent 100%)",
-                transition: "height 1.4s ease 0.15s",
+                transition: "height 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s",
                 pointerEvents: "none",
               }}
             />
@@ -577,8 +729,9 @@ export default function LoginPage() {
               lineHeight: 1.7,
               textAlign: "center",
               opacity: servicesExpanded ? 1 : 0,
-              transform: servicesExpanded ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s",
+              transform: servicesExpanded ? "translateY(0)" : "translateY(12px)",
+              filter: servicesExpanded ? "blur(0)" : "blur(2px)",
+              transition: "opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.35s, transform 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.35s, filter 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.35s",
               pointerEvents: "none",
             }}
           >
@@ -588,15 +741,16 @@ export default function LoginPage() {
         </div>
 
         {/* Expanding panels — 확장 시 페이드인 */}
-        <div style={{ maxWidth: "1280px", margin: "0 auto", animation: servicesExpanded ? "expandDown 0.8s ease 0.7s both" : "none", display: servicesExpanded ? "block" : "none" }}>
+        <div style={{ maxWidth: "1280px", margin: "0 auto", animation: servicesExpanded ? "expandDown 1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both" : "none", display: servicesExpanded ? "block" : "none" }}>
           {/* Panel row */}
           <div style={{ display: "flex", gap: "10px" }}>
-            {SERVICES.map((service) => {
+            {SERVICES.map((service, serviceIndex) => {
               const isActive = activeId === service.id;
               const hasActive = activeId !== null;
               return (
                 <div
                   key={service.id}
+                  className="home-service-panel"
                   onClick={() => setActiveId(isActive ? null : service.id)}
                   style={{
                     flex: isActive && hasActive ? 2.2 : 1,
@@ -604,7 +758,6 @@ export default function LoginPage() {
                     backgroundColor: "#111",
                     borderRadius: hasActive && isActive ? "18px 18px 0 0" : "18px",
                     cursor: "pointer",
-                    transition: "flex 0.48s cubic-bezier(0.4, 0, 0.2, 1), height 0.48s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.35s ease, background-color 0.2s",
                     padding: hasActive ? "0 24px" : "44px 32px",
                     display: "flex",
                     flexDirection: "column",
@@ -613,6 +766,7 @@ export default function LoginPage() {
                     position: "relative",
                     outline: isActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
                     outlineOffset: "-1px",
+                    animation: servicesExpanded ? `expandDown 0.85s cubic-bezier(0.22, 1, 0.36, 1) ${0.65 + serviceIndex * 0.08}s both` : undefined,
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) (e.currentTarget as HTMLDivElement).style.backgroundColor = "#1a1a1a";
@@ -623,7 +777,7 @@ export default function LoginPage() {
                 >
                   <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: "radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, transparent 65%)", pointerEvents: "none" }} />
 
-                  <span style={{ fontSize: "11px", fontWeight: "700", color: isActive ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.3)", letterSpacing: "0.18em", marginBottom: hasActive ? "4px" : "18px", transition: "color 0.2s", flexShrink: 0 }}>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: isActive ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.3)", letterSpacing: "0.18em", marginBottom: hasActive ? "4px" : "18px", flexShrink: 0 }}>
                     {service.tag}
                   </span>
                   <h3 style={{
@@ -632,7 +786,6 @@ export default function LoginPage() {
                     color: "#fff",
                     letterSpacing: "-0.03em",
                     lineHeight: 1.2,
-                    transition: "font-size 0.3s ease",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -673,7 +826,7 @@ export default function LoginPage() {
                   backgroundColor: "#0d0d0d",
                   borderRadius: detailRadius,
                   padding: "64px 72px 72px",
-                  animation: "expandDown 0.42s cubic-bezier(0.4, 0, 0.2, 1)",
+                  animation: "detailReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
                   borderTop: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
@@ -934,6 +1087,34 @@ export default function LoginPage() {
                   </div>
                 </div>}
 
+                {/* Partners */}
+                {svc.detail.partners && svc.detail.partners.length > 0 && (
+                  <div style={{ marginBottom: "56px" }}>
+                    <SectionLabel dark>함께하는 약사님들</SectionLabel>
+                    <div style={{ marginTop: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+                      {svc.detail.partners.map((p, pi) => (
+                        <a key={pi} href={p.url} target="_blank" rel="noopener noreferrer"
+                          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "14px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "16px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+                        >
+                          <div style={{ width: "52px", height: "52px", borderRadius: "50%", flexShrink: 0, overflow: "hidden", backgroundColor: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid rgba(255,255,255,0.15)" }}>
+                            {p.avatar
+                              ? <img src={p.avatar} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              : <span style={{ fontSize: "18px", fontWeight: "700", color: "rgba(255,255,255,0.6)" }}>{p.name[0].toUpperCase()}</span>
+                            }
+                          </div>
+                          <div>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: "600", marginBottom: "3px" }}>{p.store}</p>
+                            <p style={{ fontSize: "15px", color: "#fff", fontWeight: "700", marginBottom: "3px" }}>{p.name}</p>
+                            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>{p.handle}</p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Expected outcome (subCategories가 있을 때도 표시) */}
                 <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "20px", padding: "32px 36px", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: "700", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>
@@ -943,13 +1124,22 @@ export default function LoginPage() {
                     {svc.detail.effect}
                   </p>
                 </div>
+
+                <ContentGuideCta
+                  serviceId={svc.id}
+                  subtitle={
+                    CONTENT_GUIDES[svc.id]?.ctaSubtitle ??
+                    "콘텐츠의 제작 방향을 확인해보세요."
+                  }
+                  guideCount={CONTENT_GUIDES[svc.id]?.guides.length ?? 0}
+                />
               </div>
             );
           })()}
         </div>
 
         {/* ── 입점 문의 및 마케팅 신청하기 CTA ── */}
-        <div style={{ maxWidth: "1280px", margin: "80px auto 0", animation: servicesExpanded ? "expandDown 0.8s ease 1.2s both" : "none", display: servicesExpanded ? "block" : "none" }}>
+        <div style={{ maxWidth: "1280px", margin: "80px auto 0", animation: servicesExpanded ? "expandDown 1s cubic-bezier(0.22, 1, 0.36, 1) 1s both" : "none", display: servicesExpanded ? "block" : "none" }}>
           <div style={{ backgroundColor: "#111", borderRadius: "24px", padding: "72px 80px", textAlign: "center" }}>
             <p style={{ fontSize: "11px", fontWeight: "700", color: "rgba(255,255,255,0.3)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "20px" }}>
               Ready to Start
@@ -962,15 +1152,16 @@ export default function LoginPage() {
             </p>
 
             {applyDone ? (
-              <div style={{ animation: "fadeSlideIn 0.5s ease both", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              <div style={{ animation: "fadeSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
                 <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>✓</div>
                 <p style={{ fontSize: "20px", fontWeight: "700", color: "#fff" }}>신청이 완료되었습니다</p>
                 <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>빠른 시일 내에 담당자가 연락드리겠습니다.</p>
               </div>
             ) : !showCTA ? (
               <button
+                className="home-btn"
                 onClick={() => setShowCTA(true)}
-                style={{ background: "#fff", border: "none", color: "#000", padding: "16px 48px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: "pointer", transition: "all 0.2s ease", textTransform: "uppercase", borderRadius: "2px" }}
+                style={{ background: "#fff", border: "none", color: "#000", padding: "16px 48px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: "pointer", textTransform: "uppercase", borderRadius: "2px" }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
               >
@@ -979,7 +1170,7 @@ export default function LoginPage() {
             ) : (
               <form
                 onSubmit={handleApply}
-                style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px", margin: "0 auto", animation: "fadeSlideIn 0.5s ease both" }}
+                style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "400px", margin: "0 auto", animation: "fadeSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both" }}
               >
                 <input
                   type="text"
@@ -1034,7 +1225,8 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={applyLoading}
-                  style={{ marginTop: "4px", background: "#fff", border: "none", color: "#000", padding: "15px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: applyLoading ? "default" : "pointer", transition: "all 0.2s ease", textTransform: "uppercase", opacity: applyLoading ? 0.6 : 1, borderRadius: "2px" }}
+                  className="home-btn"
+                  style={{ marginTop: "4px", background: "#fff", border: "none", color: "#000", padding: "15px", fontSize: "14px", fontWeight: "700", letterSpacing: "0.15em", cursor: applyLoading ? "default" : "pointer", textTransform: "uppercase", opacity: applyLoading ? 0.6 : 1, borderRadius: "2px" }}
                   onMouseEnter={(e) => { if (!applyLoading) e.currentTarget.style.background = "rgba(255,255,255,0.85)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
                 >
@@ -1081,6 +1273,6 @@ const inputStyle: React.CSSProperties = {
   fontSize: "14px",
   outline: "none",
   fontFamily: "inherit",
-  transition: "border-color 0.2s",
+  transition: "border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
   borderRadius: "2px",
 };
